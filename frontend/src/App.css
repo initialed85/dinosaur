@@ -1,0 +1,38 @@
+.outer-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100vw;
+    height: 100vh;
+}
+
+.inner-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 99.5%;
+    height: 99%;
+}
+
+.editor-item {
+    width: 50%;
+    height: 99.5%;
+    border: 1px solid #9f9f9f;
+    margin: 5px 3px 3px;
+}
+
+.shell-item {
+    width: 50%;
+    height: 99.5%;
+    border: 1px solid #9f9f9f;
+    margin: 5px 3px 3px;
+}
+
+.shell-iframe {
+    font-family: monospace;
+    font-size: 10pt;
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,8 @@
+body {
+    font-family: monospace;
+    background-color: #323232;
+    color: #dfdfdf;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
