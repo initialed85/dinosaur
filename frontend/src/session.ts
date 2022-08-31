@@ -32,7 +32,7 @@ export const createSession = async (language: string): Promise<Session> => {
 
     const r = await fetch(getSessionAPIURL(`create_session/${language}`));
 
-    if (r.status != 201) {
+    if (r.status !== 201) {
         const errorResponse = (await r.json()) as ErrorResponse;
         throw new Error(errorResponse.error);
     }

@@ -35,7 +35,7 @@ export function App(props: AppProps) {
                     // noop
                 });
         }
-    });
+    }, [editorValue, session, error, props.language]);
 
     return (
         <div className="outer-container">

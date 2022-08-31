@@ -21,6 +21,7 @@ type Session struct {
 	port       int
 	gottyCmd   *exec.Cmd
 	dead       bool
+	basePath   string
 	folderPath string
 	filePath   string
 	buildCmd   string
@@ -119,21 +120,12 @@ func (s *Session) Open() error {
 		return err
 	}
 
+	s.basePath = filepath.Join(cwd, "tmp", s.uuid.String())
+
 	if s.language == "go" {
-		s.folderPath = filepath.Join(
-			cwd,
-			fmt.Sprintf("tmp/%v/cmd", s.uuid.String()),
-		)
-
-		s.filePath = filepath.Join(
-			s.folderPath,
-			"main.go",
-		)
-
-		s.buildCmd = fmt.Sprintf(
-			"go run %v",
-			s.filePath,
-		)
+		s.folderPath = filepath.Join(s.basePath, "cmd")
+		s.filePath = filepath.Join(s.folderPath, "main.go")
+		s.buildCmd = fmt.Sprintf("go run %v", s.filePath)
 	}
 
 	if s.folderPath == "" || s.filePath == "" {
@@ -152,10 +144,10 @@ func (s *Session) Open() error {
 
 	// TODO introduce the Docker layer somewhere around here
 	cmd := fmt.Sprintf(
-		`gotty --address 0.0.0.0 --port %v --path %v --ws-origin '.*' --config ~/.gotty bash -c "find %v | entr -c go run %v"`,
+		`gotty --address 0.0.0.0 --port %v --path %v --ws-origin '.*' --config ~/.gotty bash -c "cd %v && find . -type f | entr -c go run %v"`,
 		fmt.Sprintf("%v", s.port),
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
-		s.filePath,
+		s.basePath,
 		s.filePath,
 	)
 

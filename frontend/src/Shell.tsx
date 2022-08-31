@@ -21,7 +21,7 @@ export function Shell(props: ShellProps) {
                 }, 1_000) as any
             );
         }
-    });
+    }, [heartbeat, props.session]);
 
     return (
         // TODO properly integrate I guess xterm.js rather than iframe to gotty's usage thereof
