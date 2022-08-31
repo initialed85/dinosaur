@@ -46,12 +46,6 @@ that they're not adversaries in some way and all team chat is done with code wri
 - Containerise everything (right now it runs natively)
     - Probably Docker Compose w/ private networks (no internet access) to limit exploitability
 - Put an Nginx reverse proxy in front of it all
-- Add support for other languages (should easy if Monaco supports them and I can work out the MVP env + boilerplate)
-    - Python
-    - TypeScript
-    - C
-    - Rust
-    - Java
 - Ability to relate sessions together in a game
 - Recording for all interactions for a game
 - All the actual gamification stuff
@@ -82,3 +76,10 @@ go run cmd/main.go
 npm ci
 npm run start
 ```
+
+## How to use it
+
+Once you've got the services up and running, navigate to [http://localhost:3000/](http://localhost:3000/) to see the frontend.
+
+You can pick the language you want to play with from the buttons; alternately you can navigate straight to that language via URL;
+e.g. [http://localhost:3000/rust](http://localhost:3000/rust/).

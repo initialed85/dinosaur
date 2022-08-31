@@ -1,42 +1,31 @@
 import React from 'react';
 import './Editor.css';
 
-import MonacoEditor, { Monaco } from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
+import MonacoEditor, {Monaco} from '@monaco-editor/react';
+import {editor} from 'monaco-editor';
 
 export interface EditorProps {
     language: string;
+    code: string;
     setEditorValue: (x: string) => void;
 }
-
-const goDefaultValue = `
-package main
-
-import "log"
-
-func main() {
-    log.Printf("Hello, world.")
-}
-`;
-
-const defaultValueByLanguage = new Map();
-defaultValueByLanguage.set('go', goDefaultValue);
-
-const isLanguageSupported = (language: string): boolean => {
-    return defaultValueByLanguage.has(language);
-};
-
-const getDefaultValueForLanguage = (language: string): string => {
-    const defaultValue =
-        defaultValueByLanguage.get(language) || `// Error: unsupported language "${language}"`;
-
-    return defaultValue.trim() + '\n';
-};
 
 export function Editor(props: EditorProps) {
     let timeout: NodeJS.Timeout | null;
 
     const handleEditorDidMount = (e: editor.ICodeEditor, m: Monaco) => {
+        // TODO this kills Ctrl + C and Ctrl + V; kinda just wanna kill it externally?
+        // e.onKeyDown(event => {
+        //     const { keyCode, ctrlKey, metaKey } = event;
+        //     if (
+        //         (keyCode === KeyCode.KeyC ||
+        //             keyCode === KeyCode.KeyV) &&
+        //         (metaKey || ctrlKey)
+        //     ) {
+        //         event.preventDefault();
+        //     }
+        // });
+
         props.setEditorValue(e.getValue());
 
         e.onDidChangeModelContent((event: editor.IModelContentChangedEvent) => {
@@ -56,17 +45,17 @@ export function Editor(props: EditorProps) {
         <MonacoEditor
             height="100%"
             theme="vs-dark"
-            defaultLanguage={isLanguageSupported(props.language) ? props.language : 'go'}
-            defaultValue={getDefaultValueForLanguage(props.language)}
+            defaultLanguage={props.language}
+            defaultValue={props.code}
             options={{
-                minimap: { enabled: false },
+                minimap: {enabled: false},
                 wordBasedSuggestions: false,
                 contextmenu: false,
                 fontSize: 12,
                 fontFamily: 'monospace',
                 formatOnPaste: true,
                 formatOnType: true,
-                readOnly: !isLanguageSupported(props.language)
+                scrollBeyondLastLine: false
             }}
             onMount={handleEditorDidMount}
         />

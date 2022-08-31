@@ -17,6 +17,7 @@ import (
 type Session struct {
 	mu         sync.Mutex
 	language   string
+	code       string
 	uuid       uuid.UUID
 	port       int
 	gottyCmd   *exec.Cmd
@@ -28,7 +29,7 @@ type Session struct {
 	heartbeat  time.Time
 }
 
-func NewSession(language string) *Session {
+func NewSession(language string, code string) *Session {
 	sessionUUID, err := uuid.NewRandom()
 	if err != nil {
 		log.Fatal(err) // TODO shouldn't fail unless things are dire
@@ -41,12 +42,21 @@ func NewSession(language string) *Session {
 
 	s := Session{
 		language: language,
+		code:     code,
 		uuid:     sessionUUID,
 		port:     port,
 		dead:     false,
 	}
 
 	return &s
+}
+
+func (s *Session) Language() string {
+	return s.language
+}
+
+func (s *Session) Code() string {
+	return s.code
 }
 
 func (s *Session) UUID() uuid.UUID {
@@ -101,18 +111,6 @@ func (s *Session) Open() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	found := false
-	for _, supportedLanguage := range supportedLanguages {
-		if s.language == supportedLanguage {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("unsupported language: %#+v", s.language)
-	}
-
 	var err error
 
 	cwd, err := os.Getwd()
@@ -122,15 +120,14 @@ func (s *Session) Open() error {
 
 	s.basePath = filepath.Join(cwd, "tmp", s.uuid.String())
 
-	if s.language == "go" {
-		s.folderPath = filepath.Join(s.basePath, "cmd")
-		s.filePath = filepath.Join(s.folderPath, "main.go")
-		s.buildCmd = fmt.Sprintf("go run %v", s.filePath)
+	supportedLanguage, ok := supportedLanguageByName[s.language]
+	if !ok {
+		return fmt.Errorf("unsupported language: %v", s.language)
 	}
 
-	if s.folderPath == "" || s.filePath == "" {
-		return fmt.Errorf("folderPath or filePath not set; something insane has happened")
-	}
+	s.folderPath = filepath.Join(s.basePath, supportedLanguage.FolderPath)
+	s.filePath = filepath.Join(s.folderPath, supportedLanguage.FileName)
+	s.buildCmd = supportedLanguage.BuildCmd
 
 	err = os.MkdirAll(s.folderPath, 0755)
 	if err != nil {
@@ -144,11 +141,11 @@ func (s *Session) Open() error {
 
 	// TODO introduce the Docker layer somewhere around here
 	cmd := fmt.Sprintf(
-		`gotty --address 0.0.0.0 --port %v --path %v --ws-origin '.*' --config ~/.gotty bash -c "cd %v && find . -type f | entr -c go run %v"`,
+		`gotty --address 0.0.0.0 --port %v --path %v --ws-origin '.*' bash -c 'cd %v && find . -type f | entr -n -r -a -c -s "%v"'`,
 		fmt.Sprintf("%v", s.port),
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
 		s.basePath,
-		s.filePath,
+		s.buildCmd,
 	)
 
 	s.gottyCmd = exec.Command(
@@ -156,6 +153,8 @@ func (s *Session) Open() error {
 		"-c",
 		cmd,
 	)
+
+	log.Printf("executing cmd=%v", s.gottyCmd)
 
 	go func() {
 		err = s.gottyCmd.Run()

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func getErrorResponseJSON(err error) ([]byte, error) {
@@ -74,6 +75,7 @@ func getCreateSessionResponseJSON(s *sessions.Session, u *url.URL) ([]byte, erro
 		UUID:        s.UUID(),
 		Port:        s.Port(),
 		InternalURL: s.InternalURL(),
+		Code:        strings.TrimRight(strings.TrimLeft(s.Code(), "\r\n\t "), "\r\n\t ") + "\n",
 	}
 
 	responseJSON, err := json.Marshal(response)
@@ -127,7 +129,7 @@ func handlePushToSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 	responseJSON := unknownInternalServerErrorResponseJSON
 
 	// TODO all of this
-	responseJSON = []byte("{}")
+	responseJSON = []byte(`{"success": true"}`)
 
 	log.Printf(
 		">>> %v %v %v %v",
@@ -146,7 +148,7 @@ func handleHeartbeatForSessionResponse(w http.ResponseWriter, r *http.Request, s
 	responseJSON := unknownInternalServerErrorResponseJSON
 
 	// TODO all of this
-	responseJSON = []byte("{}")
+	responseJSON = []byte(`{"success": true"}`)
 
 	log.Printf(
 		">>> %v %v %v %v",

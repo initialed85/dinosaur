@@ -8,13 +8,14 @@ interface CreateSessionResponse {
     uuid: string;
     port: number;
     internal_url: string;
+    code: string;
 }
 
 export interface Session {
     uuid: string;
     port: number;
     internalUrl: string;
-    error: string;
+    code: string;
 }
 
 export const getSessionAPIURL = (path: string): string => {
@@ -44,7 +45,8 @@ export const createSession = async (language: string): Promise<Session> => {
     return {
         uuid: response.uuid,
         port: response.port,
-        internalUrl: response.internal_url
+        internalUrl: response.internal_url,
+        code: response.code
     } as Session;
 };
 

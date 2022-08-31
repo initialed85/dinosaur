@@ -7,6 +7,20 @@
     height: 100vh;
 }
 
+.inner-container-language-selection {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    width: 50%;
+    height: 5%;
+    padding-top: 10px;
+}
+
+.button-language-selection {
+    width: 200px;
+}
+
 .inner-container {
     display: flex;
     flex-direction: row;

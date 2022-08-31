@@ -16,6 +16,7 @@ type CreateSessionResponse struct {
 	UUID        uuid.UUID `json:"uuid"`
 	Port        int       `json:"port"`
 	InternalURL string    `json:"internal_url"`
+	Code        string    `json:"code"`
 }
 
 type PushToSessionRequest struct {
