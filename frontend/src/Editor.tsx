@@ -23,7 +23,7 @@ const defaultValueByLanguage = new Map();
 defaultValueByLanguage.set('go', goDefaultValue);
 
 const isLanguageSupported = (language: string): boolean => {
-    return !!defaultValueByLanguage.has(language);
+    return defaultValueByLanguage.has(language);
 };
 
 const getDefaultValueForLanguage = (language: string): string => {
