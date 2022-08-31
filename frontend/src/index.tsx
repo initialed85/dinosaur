@@ -5,8 +5,10 @@ import { App } from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
+const language = window.location.pathname.split('/')[1] || 'go';
+
 root.render(
     <React.StrictMode>
-        <App language={'go'} />
+        <App language={language} />
     </React.StrictMode>
 );

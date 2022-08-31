@@ -48,52 +48,11 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request, language 
 
 	session, err := s.sessionManager.CreateSession(language)
 	if err != nil {
-		_ = s.sessionManager.DestroySession(session.UUID())
 		handleBadRequest(w, r, err) // TODO may not always be a bad request; need typed errors
 		return
 	}
 
 	handleCreateSessionResponse(w, r, session)
-}
-
-func (s *Server) proxySession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
-	sessionUUID, err := uuid.Parse(rawSessionUUID)
-	if err != nil {
-		handleBadRequest(w, r, fmt.Errorf("invalid session UUID: %#+v", rawSessionUUID))
-		return
-	}
-
-	session, err := s.sessionManager.GetSession(sessionUUID)
-	if err != nil {
-		handleBadRequest(w, r, err)
-		return
-	}
-
-	proxyUrl, err := url.Parse(session.GetProxyURL(r.URL))
-	if err != nil {
-		handleInternalServerError(w, r, err)
-		return
-	}
-
-	log.Printf(
-		"!!! %v %v -> %v",
-		r.Method,
-		r.URL.Path,
-		proxyUrl.String(),
-	)
-
-	proxy := httputil.ReverseProxy{
-		Director: func(request *http.Request) {
-			request.URL = proxyUrl
-
-			request.Header.Set(
-				"Host",
-				fmt.Sprintf("%v:%v", session.Host(), session.Port()),
-			)
-		},
-	}
-
-	proxy.ServeHTTP(w, r)
 }
 
 func (s *Server) pushToSession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
@@ -136,6 +95,75 @@ func (s *Server) pushToSession(w http.ResponseWriter, r *http.Request, rawSessio
 	)
 }
 
+func (s *Server) heartbeatForSession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
+	if r.Method != http.MethodGet {
+		handleBadRequest(w, r, fmt.Errorf("unsupported method: %#+v", r.Method))
+		return
+	}
+
+	sessionUUID, err := uuid.Parse(rawSessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, fmt.Errorf("invalid session UUID: %#+v", rawSessionUUID))
+		return
+	}
+
+	session, err := s.sessionManager.GetSession(sessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, err)
+		return
+	}
+
+	session.Heartbeat()
+
+	handleHeartbeatForSessionResponse(w, r, session)
+
+	log.Printf(
+		"!!! %v %v -> heartbeat",
+		r.Method,
+		r.URL.Path,
+	)
+}
+
+func (s *Server) proxySession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
+	sessionUUID, err := uuid.Parse(rawSessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, fmt.Errorf("invalid session UUID: %#+v", rawSessionUUID))
+		return
+	}
+
+	session, err := s.sessionManager.GetSession(sessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, err)
+		return
+	}
+
+	proxyUrl, err := url.Parse(session.GetProxyURL(r.URL))
+	if err != nil {
+		handleInternalServerError(w, r, err)
+		return
+	}
+
+	log.Printf(
+		"!!! %v %v -> %v",
+		r.Method,
+		r.URL.Path,
+		proxyUrl.String(),
+	)
+
+	proxy := httputil.ReverseProxy{
+		Director: func(request *http.Request) {
+			request.URL = proxyUrl
+
+			request.Header.Set(
+				"Host",
+				fmt.Sprintf("%v:%v", session.Host(), session.Port()),
+			)
+		},
+	}
+
+	proxy.ServeHTTP(w, r)
+}
+
 func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -163,6 +191,11 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 			s.pushToSession(w, r, parts[1])
 			return
 		}
+
+		if parts[0] == "heartbeat_for_session" {
+			s.heartbeatForSession(w, r, parts[1])
+			return
+		}
 	}
 
 	if len(parts) >= 2 {
@@ -176,9 +209,15 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Open() error {
+	err := s.sessionManager.Open()
+	if err != nil {
+		return err
+	}
+
 	return s.server.ListenAndServe()
 }
 
 func (s *Server) Close() {
+	s.sessionManager.Close()
 	_ = s.server.Close()
 }

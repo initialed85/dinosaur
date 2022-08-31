@@ -22,6 +22,17 @@ func main() {
 const defaultValueByLanguage = new Map();
 defaultValueByLanguage.set('go', goDefaultValue);
 
+const isLanguageSupported = (language: string): boolean => {
+    return !!defaultValueByLanguage.has(language);
+};
+
+const getDefaultValueForLanguage = (language: string): string => {
+    const defaultValue =
+        defaultValueByLanguage.get(language) || `// Error: unsupported language "${language}"`;
+
+    return defaultValue.trim() + '\n';
+};
+
 export function Editor(props: EditorProps) {
     let timeout: NodeJS.Timeout | null;
 
@@ -45,8 +56,8 @@ export function Editor(props: EditorProps) {
         <MonacoEditor
             height="100%"
             theme="vs-dark"
-            defaultLanguage={props.language}
-            defaultValue={defaultValueByLanguage.get(props.language).trim() + '\n' || ''}
+            defaultLanguage={isLanguageSupported(props.language) ? props.language : 'go'}
+            defaultValue={getDefaultValueForLanguage(props.language)}
             options={{
                 minimap: { enabled: false },
                 wordBasedSuggestions: false,
@@ -54,7 +65,8 @@ export function Editor(props: EditorProps) {
                 fontSize: 12,
                 fontFamily: 'monospace',
                 formatOnPaste: true,
-                formatOnType: true
+                formatOnType: true,
+                readOnly: !isLanguageSupported(props.language)
             }}
             onMount={handleEditorDidMount}
         />

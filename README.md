@@ -43,8 +43,6 @@ that they're not adversaries in some way and all team chat is done with code wri
 
 ## TODO
 
-- Scheduled cleanup of resources
-    - Maybe rely on a frontend heartbeat?
 - Containerise everything (right now it runs natively)
     - Probably Docker Compose w/ private networks (no internet access) to limit exploitability
 - Put an Nginx reverse proxy in front of it all

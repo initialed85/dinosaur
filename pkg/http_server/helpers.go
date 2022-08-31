@@ -140,3 +140,22 @@ func handlePushToSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 	w.WriteHeader(status)
 	_, _ = w.Write(responseJSON)
 }
+
+func handleHeartbeatForSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
+	status := http.StatusAccepted
+	responseJSON := unknownInternalServerErrorResponseJSON
+
+	// TODO all of this
+	responseJSON = []byte("{}")
+
+	log.Printf(
+		">>> %v %v %v %v",
+		r.Method,
+		r.URL.Path,
+		status,
+		string(responseJSON),
+	)
+
+	w.WriteHeader(status)
+	_, _ = w.Write(responseJSON)
+}

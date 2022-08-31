@@ -11,6 +11,7 @@ export interface AppProps {
 export function App(props: AppProps) {
     const [editorValue, setEditorValue] = useState('');
     const [session, setSession] = useState(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!session) {
@@ -18,16 +19,20 @@ export function App(props: AppProps) {
                 .then((x: Session) => {
                     setSession(x as any);
                 })
-                .catch(e => {});
+                .catch(e => {
+                    if (!error) {
+                        setError(e.toString());
+                    }
+                });
         }
 
         if (session && editorValue) {
             pushToSession(session, editorValue)
                 .then(x => {
-                    console.log(x);
+                    // noop
                 })
                 .catch(e => {
-                    console.log(e);
+                    // noop
                 });
         }
     });
@@ -38,7 +43,7 @@ export function App(props: AppProps) {
             <div className="inner-container">
                 <div className="editor-item">
                     <Editor
-                        language={'go'}
+                        language={props.language}
                         setEditorValue={(x: string): void => {
                             setEditorValue(x);
                         }}
@@ -46,9 +51,13 @@ export function App(props: AppProps) {
                 </div>
                 <div className="shell-item">
                     {session ? (
-                        <Shell sessionUUID={(session as Session).uuid} />
+                        <Shell session={session} />
                     ) : (
-                        <div className="shell-iframe">ERROR: Failed to contact session service</div>
+                        <div className="shell-iframe">
+                            Attempting to interact with backend... <br />
+                            <br />
+                            {error}
+                        </div>
                     )}
                 </div>
             </div>

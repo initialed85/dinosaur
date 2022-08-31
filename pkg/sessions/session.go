@@ -24,6 +24,7 @@ type Session struct {
 	folderPath string
 	filePath   string
 	buildCmd   string
+	heartbeat  time.Time
 }
 
 func NewSession(language string) *Session {
@@ -81,11 +82,18 @@ func (s *Session) PushToSession(data string) error {
 	return nil
 }
 
+func (s *Session) Heartbeat() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.heartbeat = time.Now()
+}
+
 func (s *Session) Dead() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return s.dead
+	return s.dead || time.Now().Sub(s.heartbeat) > time.Second*5
 }
 
 func (s *Session) Open() error {
@@ -96,6 +104,7 @@ func (s *Session) Open() error {
 	for _, supportedLanguage := range supportedLanguages {
 		if s.language == supportedLanguage {
 			found = true
+			break
 		}
 	}
 
@@ -113,7 +122,7 @@ func (s *Session) Open() error {
 	if s.language == "go" {
 		s.folderPath = filepath.Join(
 			cwd,
-			fmt.Sprintf("tmp/%v/gottyCmd", s.uuid.String()),
+			fmt.Sprintf("tmp/%v/cmd", s.uuid.String()),
 		)
 
 		s.filePath = filepath.Join(
@@ -158,6 +167,7 @@ func (s *Session) Open() error {
 
 	go func() {
 		err = s.gottyCmd.Run()
+		s.dead = true
 	}()
 
 	runtime.Gosched()
@@ -168,6 +178,8 @@ func (s *Session) Open() error {
 		s.Close()
 		return err
 	}
+
+	s.heartbeat = time.Now()
 
 	return nil
 }
@@ -181,5 +193,5 @@ func (s *Session) Close() {
 		_ = s.gottyCmd.Process.Kill()
 	}
 
-	_ = os.RemoveAll(s.folderPath)
+	_ = os.RemoveAll(filepath.Join("tmp", s.uuid.String()))
 }

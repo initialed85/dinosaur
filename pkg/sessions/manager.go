@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"sync"
+	"time"
 )
 
 type Manager struct {
 	mu            sync.Mutex
 	sessionByUUID map[uuid.UUID]*Session
+	ticker        *time.Ticker
 }
 
 func NewManager() *Manager {
@@ -20,11 +22,32 @@ func NewManager() *Manager {
 	return &m
 }
 
+func (m *Manager) Open() error {
+	m.ticker = time.NewTicker(time.Second)
+
+	go func() {
+		for {
+			_ = <-m.ticker.C
+
+			m.mu.Lock()
+			dead := m.ticker == nil
+			m.mu.Unlock()
+
+			if dead {
+				return
+			}
+
+			m.PruneSessions()
+		}
+	}()
+
+	return nil
+}
+
 func (m *Manager) CreateSession(language string) (*Session, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// TODO cleanup of sessions
 	s := NewSession(language)
 
 	err := s.Open()
@@ -65,8 +88,29 @@ func (m *Manager) DestroySession(sessionUUID uuid.UUID) error {
 	return nil
 }
 
+func (m *Manager) PruneSessions() {
+	m.mu.Lock()
+	toDelete := make([]uuid.UUID, 0)
+	for sessionUUID, session := range m.sessionByUUID {
+		if !session.Dead() {
+			continue
+		}
+
+		toDelete = append(toDelete, sessionUUID)
+	}
+	m.mu.Unlock()
+
+	for _, sessionUUID := range toDelete {
+		_ = m.DestroySession(sessionUUID)
+	}
+}
+
 func (m *Manager) Close() {
 	m.mu.Lock()
+	if m.ticker != nil {
+		m.ticker.Stop()
+		m.ticker = nil
+	}
 	toDelete := make([]uuid.UUID, 0)
 	for sessionUUID, _ := range m.sessionByUUID {
 		toDelete = append(toDelete, sessionUUID)
