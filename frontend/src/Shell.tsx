@@ -13,7 +13,11 @@ export function Shell(props: ShellProps) {
         if (!heartbeat) {
             setHeartbeat(
                 setInterval(async () => {
-                    await heartbeatForSession(props.session);
+                    try {
+                        await heartbeatForSession(props.session);
+                    } catch (e) {
+                        // noop
+                    }
                 }, 1_000) as any
             );
         }
