@@ -1,8 +1,8 @@
 import React from 'react';
 import './Editor.css';
 
-import MonacoEditor, {Monaco} from '@monaco-editor/react';
-import {editor} from 'monaco-editor';
+import MonacoEditor, { Monaco } from '@monaco-editor/react';
+import { editor } from 'monaco-editor';
 
 export interface EditorProps {
     language: string;
@@ -48,7 +48,7 @@ export function Editor(props: EditorProps) {
             defaultLanguage={props.language}
             defaultValue={props.code}
             options={{
-                minimap: {enabled: false},
+                minimap: { enabled: false },
                 wordBasedSuggestions: false,
                 contextmenu: false,
                 fontSize: 12,

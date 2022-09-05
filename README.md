@@ -43,7 +43,7 @@ that they're not adversaries in some way and all team chat is done with code wri
 
 ## TODO
 
-- Containerise everything (right now it runs natively)
+- Finish containerising everything (sessions are containerised but servers aren't)
     - Probably Docker Compose w/ private networks (no internet access) to limit exploitability
 - Put an Nginx reverse proxy in front of it all
 - Ability to relate sessions together in a game
@@ -58,9 +58,7 @@ that they're not adversaries in some way and all team chat is done with code wri
 ### Prerequisites
 
 - [Go](https://go.dev/)
-- [entr](https://github.com/eradman/entr)
-- [sorenisanerd's](https://github.com/sorenisanerd) fork of [gotty](https://github.com/sorenisanerd/gotty)
-- [npm](https://docs.npmjs.com/)
+- [Docker](https://www.docker.com/)
 
 ### Steps
 

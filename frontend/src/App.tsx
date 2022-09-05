@@ -77,7 +77,7 @@ export function App(props: AppProps) {
     supportedLanguages.forEach((x, i) => {
         buttons.push(
             <button
-                id={`button-language-selection-${i}`}
+                key={`button-language-selection-${i}`}
                 className="button-language-selection"
                 onClick={() => {
                     setLanguage(x.name);

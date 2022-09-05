@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -15,18 +16,18 @@ import (
 )
 
 type Session struct {
-	mu         sync.Mutex
-	language   string
-	code       string
-	uuid       uuid.UUID
-	port       int
-	gottyCmd   *exec.Cmd
-	dead       bool
-	basePath   string
-	folderPath string
-	filePath   string
-	buildCmd   string
-	heartbeat  time.Time
+	mu            sync.Mutex
+	language      string
+	code          string
+	uuid          uuid.UUID
+	port          int
+	dockerRunCmd  *exec.Cmd
+	dead          bool
+	buildCmd      string
+	runCmd        string
+	containerName string
+	sourcePath    string
+	heartbeat     time.Time
 }
 
 func NewSession(language string, code string) *Session {
@@ -85,7 +86,40 @@ func (s *Session) GetProxyURL(externalURL *url.URL) string {
 }
 
 func (s *Session) PushToSession(data string) error {
-	err := os.WriteFile(s.filePath, []byte(data), 0644)
+	f, err := os.CreateTemp("", s.containerName)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = f.Close()
+		_ = os.Remove(f.Name())
+	}()
+
+	_, err = f.WriteString(data)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	destPath := path.Join("/srv", s.sourcePath)
+
+	dockerCpCmd := exec.Command(
+		"bash",
+		"-c",
+		fmt.Sprintf(
+			"docker cp %v %v:%v",
+			f.Name(),
+			s.containerName,
+			destPath,
+		),
+	)
+
+	err = dockerCpCmd.Run()
 	if err != nil {
 		return err
 	}
@@ -113,57 +147,41 @@ func (s *Session) Open() error {
 
 	var err error
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	s.basePath = filepath.Join(cwd, "tmp", s.uuid.String())
-
 	supportedLanguage, ok := supportedLanguageByName[s.language]
 	if !ok {
 		return fmt.Errorf("unsupported language: %v", s.language)
 	}
 
-	s.folderPath = filepath.Join(s.basePath, supportedLanguage.FolderPath)
-	s.filePath = filepath.Join(s.folderPath, supportedLanguage.FileName)
 	s.buildCmd = supportedLanguage.BuildCmd
+	s.runCmd = supportedLanguage.RunCmd
+	s.containerName = fmt.Sprintf("session-%v", s.uuid.String())
+	s.sourcePath = path.Join(supportedLanguage.FolderPath, supportedLanguage.FileName)
 
-	err = os.MkdirAll(s.folderPath, 0755)
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(s.filePath, []byte{}, 0644)
-	if err != nil {
-		return err
-	}
-
-	// TODO introduce the Docker layer somewhere around here
 	cmd := fmt.Sprintf(
-		`gotty --address 0.0.0.0 --port %v --path %v --ws-origin '.*' bash -c 'cd %v && find . -type f | entr -n -r -a -c -s "%v"'`,
+		`docker run --rm --name %v -p %v:8080/tcp -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" session`,
+		s.containerName,
 		fmt.Sprintf("%v", s.port),
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
-		s.basePath,
 		s.buildCmd,
+		s.runCmd,
 	)
 
-	s.gottyCmd = exec.Command(
+	s.dockerRunCmd = exec.Command(
 		"bash",
 		"-c",
 		cmd,
 	)
 
-	log.Printf("executing cmd=%v", s.gottyCmd)
+	log.Printf("executing cmd=%v", s.dockerRunCmd)
 
 	go func() {
-		err = s.gottyCmd.Run()
+		err = s.dockerRunCmd.Run()
 		s.dead = true
 	}()
 
 	runtime.Gosched()
 
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 1000) // TODO: wait for ready w/ smart check vs suspicious sleep
 
 	if err != nil {
 		s.Close()
@@ -180,9 +198,15 @@ func (s *Session) Close() {
 		s.dead = true
 	}()
 
-	if s.gottyCmd != nil && s.gottyCmd.Process != nil {
-		_ = s.gottyCmd.Process.Kill()
+	if s.dockerRunCmd != nil && s.dockerRunCmd.Process != nil {
+		_ = s.dockerRunCmd.Process.Kill()
 	}
+
+	dockerStopCmd := exec.Command("bash", "-c", fmt.Sprintf("docker kill %v", s.containerName))
+	_ = dockerStopCmd.Run()
+
+	dockerRmCmd := exec.Command("bash", "-c", fmt.Sprintf("docker rm -f %v", s.containerName))
+	_ = dockerRmCmd.Run()
 
 	_ = os.RemoveAll(filepath.Join("tmp", s.uuid.String()))
 }

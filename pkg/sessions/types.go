@@ -5,6 +5,7 @@ type SupportedLanguage struct {
 	FolderPath string
 	FileName   string
 	BuildCmd   string
+	RunCmd     string
 	Code       string
 }
 
@@ -14,14 +15,15 @@ var (
 			Name:       "go",
 			FolderPath: "cmd",
 			FileName:   "main.go",
-			BuildCmd:   "go run cmd/main.go",
+			BuildCmd:   "go build -o cmd/main cmd/main.go",
+			RunCmd:     "cmd/main",
 			Code: `
 package main
 
-import "log"
+import "fmt"
 
 func main() {
-    log.Printf("Hello, world from Go.")
+    fmt.Println("Hello world from Go.")
 }
 `,
 		},
@@ -29,30 +31,33 @@ func main() {
 			Name:       "python",
 			FolderPath: "cmd",
 			FileName:   "main.py",
-			BuildCmd:   "python3 -u cmd/main.py",
+			BuildCmd:   "python3 -m compileall cmd/main.py",
+			RunCmd:     "python3 -u cmd/main.py",
 			Code: `
-print("Hello, world from Python.")
+print("Hello world from Python.")
 `,
 		},
 		{
 			Name:       "typescript",
 			FolderPath: "cmd",
 			FileName:   "main.ts",
-			BuildCmd:   "ts-node cmd/main.ts",
+			BuildCmd:   "tsc --outFile cmd/main.js cmd/main.ts",
+			RunCmd:     "node cmd/main.js",
 			Code: `
-console.log('Hello, world from TypeScript.');
+console.log('Hello world from TypeScript.');
 `,
 		},
 		{
 			Name:       "c",
 			FolderPath: "cmd",
 			FileName:   "main.c",
-			BuildCmd:   "gcc -o cmd/main cmd/main.c && cmd/main",
+			BuildCmd:   "gcc -o cmd/main cmd/main.c",
+			RunCmd:     "cmd/main",
 			Code: `
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-	printf("Hello, world from C.\n");
+	printf("Hello world from C.\n");
 
 	return 0;
 }
@@ -62,10 +67,11 @@ int main(int argc, char *argv[]) {
 			Name:       "rust",
 			FolderPath: "cmd",
 			FileName:   "main.rs",
-			BuildCmd:   "rustc -o cmd/main cmd/main.rs && cmd/main",
+			BuildCmd:   "rustc -o cmd/main cmd/main.rs",
+			RunCmd:     "cmd/main",
 			Code: `
 fn main() {
-    println!("Hello World!");
+    println!("Hello world from Rust.");
 }
 `,
 		},
@@ -73,11 +79,12 @@ fn main() {
 			Name:       "java",
 			FolderPath: "cmd",
 			FileName:   "Main.java",
-			BuildCmd:   "javac cmd/Main.java && java --class-path cmd Main",
+			BuildCmd:   "javac cmd/Main.java",
+			RunCmd:     "java --class-path cmd Main",
 			Code: `
 class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, world from Java");
+        System.out.println("Hello world from Java.");
     }
 }
 `,

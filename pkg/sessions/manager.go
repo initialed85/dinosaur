@@ -3,6 +3,7 @@ package sessions
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -23,6 +24,17 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) Open() error {
+	dockerBuildCmd := exec.Command(
+		"bash",
+		"-c",
+		"docker build -t session -f ./docker/session/Dockerfile ./docker/session/",
+	)
+
+	err := dockerBuildCmd.Run()
+	if err != nil {
+		return err
+	}
+
 	m.ticker = time.NewTicker(time.Second)
 
 	go func() {
