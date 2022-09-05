@@ -5,7 +5,7 @@ set -e -x
 function shutdown() {
   touch /tmp/.shutdown
 }
-trap shutdown SIGINT
+trap shutdown SIGTERM
 
 _="${BASE_FOLDER_PATH:?BASE_FOLDER_PATH env var missing}"
 _="${BUILD_CMD:?BUILD_CMD env var missing}"

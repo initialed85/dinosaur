@@ -1,0 +1,33 @@
+networks:
+
+  external:
+    name: 'dinosaur-external'
+    internal: false
+
+  internal:
+    name: 'dinosaur-internal'
+    internal: true
+
+services:
+
+  backend:
+    build:
+      context: ../
+      dockerfile: ./docker/backend/Dockerfile
+    networks:
+      - external
+      - internal
+    ports:
+      - 8080:8080/tcp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    networks:
+      - external
+      - internal
+    build:
+      context: ../
+      dockerfile: ./docker/frontend/Dockerfile
+    ports:
+      - 80:80/tcp

@@ -1,16 +1,16 @@
 # dinosaur
 
-A game about writing code like a dinosaur
+A training tool that gets you to write code like a dinosaur.
 
 ## Concept
 
-- User picks a language (presently only Go is supported)
+- User picks a language
 - User is presented w/ 2 panes; editor and live feed to their code being executed
-- User makes changes to get code doing what it should do
+- User makes changes to code to achieve some goal
 
 ## Ideas
 
-Not actually sure what the challenges will be yet; I'm thinking multiplayer (e.g sockets) type things; e.g.:
+I don't really know what the goals will be yet, but I'm thinking about about multiplayer challenges- something like:
 
 - Two players need to exchange some messages with each other
 - Two players need to complete a set of calculations (over a series of messages) and each player can only see the odd or even half of the
@@ -18,9 +18,9 @@ Not actually sure what the challenges will be yet; I'm thinking multiplayer (e.g
 - Two or more players need to develop a decentralised chat system (discovery etc) without knowing who's out there
 - Same as above, but now there are adversaries (also players) actively trying to hinder the other players
 
-I might try and include some sort of in-game chat and hope people don't use it to cheat; but maybe there's a hard mode for extra points
-where the in-game chat is disabled (so the implication is that step one is discovery of your team mates e.g. using multicast, validation
-that they're not adversaries in some way and all team chat is done with code written in the session).
+Ultra hard mode would be players on the same team need to discover and communicate with each other using only the code in front of them; in
+the case where there are adversaries there'd be a whole element of validating that the person you're talking to is a teammate, not an
+adversary.
 
 ## Architecture
 
@@ -43,9 +43,6 @@ that they're not adversaries in some way and all team chat is done with code wri
 
 ## TODO
 
-- Finish containerising everything (sessions are containerised but servers aren't)
-    - Probably Docker Compose w/ private networks (no internet access) to limit exploitability
-- Put an Nginx reverse proxy in front of it all
 - Ability to relate sessions together in a game
 - Recording for all interactions for a game
 - All the actual gamification stuff
@@ -59,25 +56,14 @@ that they're not adversaries in some way and all team chat is done with code wri
 
 - [Go](https://go.dev/)
 - [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
 ### Steps
 
-**Backend**
-
 ```shell
-go run cmd/main.go
-```
-
-**Frontend**
-
-```shell
-npm ci
-npm run start
+./run.sh
 ```
 
 ## How to use it
 
-Once you've got the services up and running, navigate to [http://localhost:3000/](http://localhost:3000/) to see the frontend.
-
-You can pick the language you want to play with from the buttons; alternately you can navigate straight to that language via URL;
-e.g. [http://localhost:3000/rust](http://localhost:3000/rust/).
+Once you've got the services up and running, navigate to [http://localhost/](http://localhost/) to see the frontend.

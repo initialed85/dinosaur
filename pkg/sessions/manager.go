@@ -3,6 +3,7 @@ package sessions
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"os/exec"
 	"sync"
 	"time"
@@ -27,11 +28,12 @@ func (m *Manager) Open() error {
 	dockerBuildCmd := exec.Command(
 		"bash",
 		"-c",
-		"docker build -t session -f ./docker/session/Dockerfile ./docker/session/",
+		"docker build -t dinosaur-session -f ./docker/session/Dockerfile ./docker/session/",
 	)
 
-	err := dockerBuildCmd.Run()
+	output, err := dockerBuildCmd.CombinedOutput()
 	if err != nil {
+		log.Printf("STDOUT / STDERR: %v", string(output))
 		return err
 	}
 

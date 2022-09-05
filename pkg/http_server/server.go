@@ -10,7 +10,9 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
+	"time"
 )
 
 type Server struct {
@@ -209,15 +211,19 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Open() error {
-	err := s.sessionManager.Open()
-	if err != nil {
-		return err
-	}
+	var err error
 
-	return s.server.ListenAndServe()
+	go func() {
+		err = s.server.ListenAndServe()
+	}()
+
+	runtime.Gosched()
+
+	time.Sleep(time.Millisecond)
+
+	return err
 }
 
 func (s *Server) Close() {
-	s.sessionManager.Close()
 	_ = s.server.Close()
 }

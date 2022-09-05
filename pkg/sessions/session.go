@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -36,16 +35,11 @@ func NewSession(language string, code string) *Session {
 		log.Fatal(err) // TODO shouldn't fail unless things are dire
 	}
 
-	port, err := getFreePort()
-	if err != nil {
-		log.Fatal(err) // TODO shouldn't fail unless things are dire
-	}
-
 	s := Session{
 		language: language,
 		code:     code,
 		uuid:     sessionUUID,
-		port:     port,
+		port:     8080,
 		dead:     false,
 	}
 
@@ -65,7 +59,7 @@ func (s *Session) UUID() uuid.UUID {
 }
 
 func (s *Session) Host() string {
-	return "localhost"
+	return s.containerName
 }
 
 func (s *Session) Port() int {
@@ -158,7 +152,7 @@ func (s *Session) Open() error {
 	s.sourcePath = path.Join(supportedLanguage.FolderPath, supportedLanguage.FileName)
 
 	cmd := fmt.Sprintf(
-		`docker run --rm --name %v -p %v:8080/tcp -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" session`,
+		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --network dinosaur-internal -p %v:8080/tcp -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
 		s.containerName,
 		fmt.Sprintf("%v", s.port),
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
@@ -207,6 +201,4 @@ func (s *Session) Close() {
 
 	dockerRmCmd := exec.Command("bash", "-c", fmt.Sprintf("docker rm -f %v", s.containerName))
 	_ = dockerRmCmd.Run()
-
-	_ = os.RemoveAll(filepath.Join("tmp", s.uuid.String()))
 }

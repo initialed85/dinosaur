@@ -2,7 +2,8 @@ FROM ubuntu:22.04
 
 RUN apt-get update && \
     apt-get install -y \
-    curl git npm entr golang-1.18 python3 default-jdk procps
+    curl git npm entr golang-1.18 python3 default-jdk procps \
+    net-tools inetutils-ping traceroute netcat tcpdump iproute2
 
 RUN npm install -g typescript ts-node
 
@@ -26,7 +27,5 @@ ENV GOTTY_PATH=${GOTTY_PATH}
 ENV BASE_FOLDER_PATH=${BASE_FOLDER_PATH:-/srv/}
 ENV BUILD_CMD=${BUILD_CMD}
 ENV RUN_CMD=${RUN_CMD}
-
-STOPSIGNAL SIGINT
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

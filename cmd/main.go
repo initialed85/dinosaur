@@ -8,19 +8,24 @@ import (
 )
 
 func main() {
-	s := http_server.New(
+	sessionManager := sessions.NewManager()
+
+	server := http_server.New(
 		8080,
-		sessions.NewManager(),
+		sessionManager,
 	)
 
-	go func() {
-		err := s.Open()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	err := sessionManager.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sessionManager.Close()
 
-	defer s.Close()
+	err = server.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer server.Close()
 
-	cmd.WaitForSigInt()
+	cmd.WaitForSIGTERM()
 }

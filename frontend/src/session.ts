@@ -1,4 +1,4 @@
-import { PORT } from './config';
+import { SESSION_API_URL } from './config';
 
 interface ErrorResponse {
     error: string;
@@ -19,7 +19,7 @@ export interface Session {
 }
 
 export const getSessionAPIURL = (path: string): string => {
-    return `${window.location.protocol}//${window.location.hostname}:${PORT}/${path}`;
+    return `${SESSION_API_URL}/${path}`;
 };
 
 let createSessionInFlight = false;

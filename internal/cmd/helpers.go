@@ -6,8 +6,8 @@ import (
 	"syscall"
 )
 
-func WaitForSigInt() {
+func WaitForSIGTERM() {
 	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGINT)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
 }
