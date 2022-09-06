@@ -23,7 +23,7 @@
 
 .inner-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     align-items: stretch;
     width: 99.5%;
@@ -31,14 +31,14 @@
 }
 
 .editor-item {
-    width: 50%;
+    width: 99.5%;
     height: 99.5%;
     border: 1px solid #9f9f9f;
     margin: 5px 3px 3px;
 }
 
 .shell-item {
-    width: 50%;
+    width: 99.5%;
     height: 99.5%;
     border: 1px solid #9f9f9f;
     margin: 5px 3px 3px;
