@@ -4,6 +4,16 @@ interface ErrorResponse {
     error: string;
 }
 
+interface SupportedLanguageResponseItem {
+    name: string;
+    friendly_name: string;
+}
+
+export interface SupportedLanguage {
+    name: string;
+    friendlyName: string;
+}
+
 interface CreateSessionResponse {
     uuid: string;
     port: number;
@@ -20,6 +30,24 @@ export interface Session {
 
 export const getSessionAPIURL = (path: string): string => {
     return `${SESSION_API_URL}/${path}`;
+};
+
+export const getSupportedLanguages = async (): Promise<SupportedLanguage[]> => {
+    const r = await fetch(getSessionAPIURL(`get_supported_languages`));
+
+    if (r.status !== 200) {
+        const errorResponse = (await r.json()) as ErrorResponse;
+        throw new Error(errorResponse.error);
+    }
+
+    const response = (await r.json()) as SupportedLanguageResponseItem[];
+
+    return response.map(item => {
+        return {
+            name: item.name,
+            friendlyName: item.friendly_name
+        } as SupportedLanguage;
+    });
 };
 
 let createSessionInFlight = false;

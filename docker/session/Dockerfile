@@ -2,7 +2,9 @@ FROM ubuntu:22.04
 
 RUN apt-get update && \
     apt-get install -y \
-    curl git npm entr golang-1.18 python3 default-jdk procps \
+    curl git npm entr \
+    golang-1.18 python3 default-jdk lua5.4 \
+    procps file strace \
     net-tools inetutils-ping traceroute netcat tcpdump iproute2
 
 RUN npm install -g typescript ts-node

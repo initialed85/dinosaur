@@ -1,0 +1,7 @@
+{
+  "friendly_name": "Java",
+  "folder_path": "cmd",
+  "file_name": "Main.java",
+  "build_cmd": "javac cmd/Main.java",
+  "run_cmd": "java --class-path cmd Main"
+}

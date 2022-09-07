@@ -2,46 +2,38 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Editor } from './Editor';
 import { Shell } from './Shell';
-import { createSession, pushToSession, Session } from './session';
-
-const supportedLanguages = [
-    {
-        name: 'go',
-        friendlyName: 'Go'
-    },
-    {
-        name: 'python',
-        friendlyName: 'Python'
-    },
-    {
-        name: 'typescript',
-        friendlyName: 'TypeScript'
-    },
-    {
-        name: 'c',
-        friendlyName: 'C'
-    },
-    {
-        name: 'rust',
-        friendlyName: 'Rust'
-    },
-    {
-        name: 'java',
-        friendlyName: 'Java'
-    }
-];
+import {
+    createSession,
+    getSupportedLanguages,
+    pushToSession,
+    Session,
+    SupportedLanguage
+} from './session';
 
 export interface AppProps {
     language: string | null;
 }
 
 export function App(props: AppProps) {
+    const [supportedLanguages, setSupportedLanguages] = useState(null);
     const [language, setLanguage] = useState(props.language);
     const [session, setSession] = useState(null);
     const [editorValue, setEditorValue] = useState('');
     const [error, setError] = useState(null);
 
+    const buttons: any[] = [];
+
     useEffect(() => {
+        if (!supportedLanguages) {
+            getSupportedLanguages()
+                .then(receivedSupportedLanguages => {
+                    setSupportedLanguages(receivedSupportedLanguages as any);
+                })
+                .catch(e => {
+                    console.error(e);
+                });
+        }
+
         if (!language) {
             return;
         }
@@ -72,21 +64,21 @@ export function App(props: AppProps) {
             });
     }, [language, editorValue, session, error, props.language]);
 
-    const buttons: any[] = [];
-
-    supportedLanguages.forEach((x, i) => {
-        buttons.push(
-            <button
-                key={`button-language-selection-${i}`}
-                className="button-language-selection"
-                onClick={() => {
-                    setLanguage(x.name);
-                }}
-            >
-                {x.friendlyName}
-            </button>
-        );
-    });
+    if (supportedLanguages) {
+        (supportedLanguages as SupportedLanguage[]).forEach((x, i) => {
+            buttons.push(
+                <button
+                    key={`button-language-selection-${i}`}
+                    className="button-language-selection"
+                    onClick={() => {
+                        setLanguage(x.name);
+                    }}
+                >
+                    {x.friendlyName}
+                </button>
+            );
+        });
+    }
 
     return (
         <div className="outer-container">

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -66,10 +65,32 @@ func handleInternalServerError(w http.ResponseWriter, r *http.Request, errToHand
 	_, _ = w.Write(responseJSON)
 }
 
-func getCreateSessionResponseJSON(s *sessions.Session, u *url.URL) ([]byte, error) {
-	if s == nil {
-		return []byte{}, fmt.Errorf("session cannot be nil")
+func handleGetSupportedLanguagesResponse(w http.ResponseWriter, r *http.Request, supportedLanguages []sessions.SupportedLanguage) {
+	status := http.StatusInternalServerError
+	responseJSON := unknownInternalServerErrorResponseJSON
+	var err error
+
+	responseJSON, err = json.Marshal(supportedLanguages)
+	if err == nil {
+		status = http.StatusOK
 	}
+
+	log.Printf(
+		">>> %v %v %v %v",
+		r.Method,
+		r.URL.Path,
+		status,
+		string(responseJSON),
+	)
+
+	w.WriteHeader(status)
+	_, _ = w.Write(responseJSON)
+}
+
+func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
+	status := http.StatusInternalServerError
+	responseJSON := unknownInternalServerErrorResponseJSON
+	var err error
 
 	response := CreateSessionResponse{
 		UUID:        s.UUID(),
@@ -78,20 +99,7 @@ func getCreateSessionResponseJSON(s *sessions.Session, u *url.URL) ([]byte, erro
 		Code:        strings.TrimRight(strings.TrimLeft(s.Code(), "\r\n\t "), "\r\n\t ") + "\n",
 	}
 
-	responseJSON, err := json.Marshal(response)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return responseJSON, nil
-}
-
-func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
-	var err error
-
-	responseJSON, err = getCreateSessionResponseJSON(s, r.URL)
+	responseJSON, err = json.Marshal(response)
 	if err == nil {
 		status = http.StatusCreated
 	}

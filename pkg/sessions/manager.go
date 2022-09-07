@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"os/exec"
+	"sort"
 	"sync"
 	"time"
 )
@@ -56,6 +57,28 @@ func (m *Manager) Open() error {
 	}()
 
 	return nil
+}
+
+func (m *Manager) GetSupportedLanguages() []SupportedLanguage {
+	supportedLanguages := make([]SupportedLanguage, 0)
+	for _, supportedLanguage := range supportedLanguageByName {
+		supportedLanguages = append(
+			supportedLanguages,
+			SupportedLanguage{
+				Name:         supportedLanguage.Name,
+				FriendlyName: supportedLanguage.FriendlyName,
+			},
+		)
+	}
+
+	sort.Slice(
+		supportedLanguages,
+		func(i, j int) bool {
+			return supportedLanguages[i].FriendlyName < supportedLanguages[j].FriendlyName
+		},
+	)
+
+	return supportedLanguages
 }
 
 func (m *Manager) CreateSession(language string) (*Session, error) {

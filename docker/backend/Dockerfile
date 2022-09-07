@@ -25,8 +25,10 @@ RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io d
 
 WORKDIR /srv/
 
-RUN mkdir -p /srv/docker/
+RUN mkdir -p /srv/pkg/sessions/languages
+COPY pkg/sessions/languages /srv/pkg/sessions/languages
 
+RUN mkdir -p /srv/docker/
 COPY docker/session /srv/docker/session
 
 COPY --from=build /srv/main /srv/main

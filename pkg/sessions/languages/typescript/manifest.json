@@ -1,0 +1,7 @@
+{
+  "friendly_name": "TypeScript",
+  "folder_path": "cmd",
+  "file_name": "main.ts",
+  "build_cmd": "tsc --outFile cmd/main.js cmd/main.ts",
+  "run_cmd": "node cmd/main.js"
+}

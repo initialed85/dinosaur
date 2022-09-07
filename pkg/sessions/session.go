@@ -152,9 +152,8 @@ func (s *Session) Open() error {
 	s.sourcePath = path.Join(supportedLanguage.FolderPath, supportedLanguage.FileName)
 
 	cmd := fmt.Sprintf(
-		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --network dinosaur-internal -p %v:8080/tcp -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
+		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --network dinosaur-internal -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
 		s.containerName,
-		fmt.Sprintf("%v", s.port),
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
 		s.buildCmd,
 		s.runCmd,

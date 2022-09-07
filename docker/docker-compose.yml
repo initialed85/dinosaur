@@ -17,10 +17,10 @@ services:
     networks:
       - external
       - internal
-    ports:
-      - 8080:8080/tcp
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:8080/tcp
 
   frontend:
     networks:

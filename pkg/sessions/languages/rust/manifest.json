@@ -1,0 +1,7 @@
+{
+  "friendly_name": "Rust",
+  "folder_path": "cmd",
+  "file_name": "main.rs",
+  "build_cmd": "rustc -o cmd/main cmd/main.rs",
+  "run_cmd": "cmd/main"
+}

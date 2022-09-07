@@ -42,6 +42,17 @@ func New(
 	return &s
 }
 
+func (s *Server) getSupportedLanguages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		handleBadRequest(w, r, fmt.Errorf("unsupported method: %#+v", r.Method))
+		return
+	}
+
+	supportedLanguages := s.sessionManager.GetSupportedLanguages()
+
+	handleGetSupportedLanguagesResponse(w, r, supportedLanguages)
+}
+
 func (s *Server) createSession(w http.ResponseWriter, r *http.Request, language string) {
 	if r.Method != http.MethodGet {
 		handleBadRequest(w, r, fmt.Errorf("unsupported method: %#+v", r.Method))
@@ -181,6 +192,13 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 	if len(parts) < 1 {
 		handleBadRequest(w, r, fmt.Errorf("unknown URL path: %#+v", r.URL.Path))
 		return
+	}
+
+	if len(parts) == 1 {
+		if parts[0] == "get_supported_languages" {
+			s.getSupportedLanguages(w, r)
+			return
+		}
 	}
 
 	if len(parts) == 2 {

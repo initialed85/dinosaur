@@ -1,0 +1,7 @@
+{
+  "friendly_name": "Go",
+  "folder_path": "cmd",
+  "file_name": "main.go",
+  "build_cmd": "go build -o cmd/main cmd/main.go",
+  "run_cmd": "cmd/main"
+}

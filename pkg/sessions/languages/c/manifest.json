@@ -1,0 +1,7 @@
+{
+  "friendly_name": "C",
+  "folder_path": "cmd",
+  "file_name": "main.c",
+  "build_cmd": "gcc -o cmd/main cmd/main.c",
+  "run_cmd": "cmd/main"
+}

@@ -1,0 +1,7 @@
+{
+  "friendly_name": "Python",
+  "folder_path": "cmd",
+  "file_name": "main.py",
+  "build_cmd": "python3 -m compileall cmd/main.py",
+  "run_cmd": "python3 -u cmd/main.py"
+}
