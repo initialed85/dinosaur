@@ -62,7 +62,7 @@ export function App(props: AppProps) {
             .catch(e => {
                 // noop
             });
-    }, [language, editorValue, session, error, props.language]);
+    }, [supportedLanguages, language, editorValue, session, error, props.language]);
 
     if (supportedLanguages) {
         (supportedLanguages as SupportedLanguage[]).forEach((x, i) => {
