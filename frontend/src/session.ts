@@ -33,7 +33,7 @@ export const getSessionAPIURL = (path: string): string => {
 };
 
 export const getSupportedLanguages = async (): Promise<SupportedLanguage[]> => {
-    const r = await fetch(getSessionAPIURL(`get_supported_languages`));
+    const r = await fetch(getSessionAPIURL(`get_supported_languages/`));
 
     if (r.status !== 200) {
         const errorResponse = (await r.json()) as ErrorResponse;
@@ -59,7 +59,7 @@ export const createSession = async (language: string): Promise<Session> => {
 
     createSessionInFlight = true;
 
-    const r = await fetch(getSessionAPIURL(`create_session/${language}`));
+    const r = await fetch(getSessionAPIURL(`create_session/${language}/`));
 
     if (r.status !== 201) {
         const errorResponse = (await r.json()) as ErrorResponse;
