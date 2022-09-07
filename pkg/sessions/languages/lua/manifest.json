@@ -1,5 +1,5 @@
 {
-  "friendly_name": "Java",
+  "friendly_name": "Lua",
   "folder_path": "cmd",
   "file_name": "main.lua",
   "build_cmd": "luac -o cmd/main cmd/main.lua",
