@@ -17,7 +17,7 @@ func receiveCallback(conn net.PacketConn, addr net.Addr, data []byte, localAddr 
 		return
 	}
 
-	fmt.Printf("%v\t%#+v\n", addr.String(), string(data))
+	fmt.Printf("%v:%v\t%v\n", addr.(*net.UDPAddr).IP.String(), addr.(*net.UDPAddr).Port, string(data))
 }
 
 func receiveLoop(conn net.PacketConn, localAddr *net.UDPAddr) {

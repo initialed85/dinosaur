@@ -10,7 +10,7 @@ def receive_callback(sock: socket.socket, data, addr, local_ip):
     if addr == (local_ip, PORT):
         return
 
-    print(f"{repr(addr)}\t{repr(data)}")
+    print(f"{addr[0]}:{addr[1]}\t{repr(data.decode('utf-8'))}")
 
 
 def receive_loop(sock, local_ip):

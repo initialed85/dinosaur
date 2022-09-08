@@ -43,12 +43,9 @@ adversary.
 
 ## TODO
 
-- Ability to relate sessions together in a game
-- Recording for all interactions for a game
-- All the actual gamification stuff
-    - Identity / single sign-on
-    - Lobby
-    - Scoring
+- Fill out the "socket sender w/ receive loop thread" templates for all languages
+- Ability to group sessions together / isolate them from other groups
+- Record all the packets and interactions for a group with timestamps
 
 ## How to run it
 
@@ -66,4 +63,7 @@ adversary.
 
 ## How to use it
 
-Once you've got the services up and running, navigate to [http://localhost/](http://localhost/) to see the frontend.
+Once you've got the services up and running, navigate to [http://localhost/](http://localhost/) to see the frontend and select a language to
+play with.
+
+You can also navigate directly to a particular language, e.g. [http://localhost/?language=rust](http://localhost/?language=rust).
