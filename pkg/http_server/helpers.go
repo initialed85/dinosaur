@@ -136,7 +136,6 @@ func handlePushToSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 	status := http.StatusAccepted
 	responseJSON := unknownInternalServerErrorResponseJSON
 
-	// TODO all of this
 	responseJSON = []byte(`{"success": true"}`)
 
 	log.Printf(
@@ -155,7 +154,6 @@ func handleHeartbeatForSessionResponse(w http.ResponseWriter, r *http.Request, s
 	status := http.StatusAccepted
 	responseJSON := unknownInternalServerErrorResponseJSON
 
-	// TODO all of this
 	responseJSON = []byte(`{"success": true"}`)
 
 	log.Printf(

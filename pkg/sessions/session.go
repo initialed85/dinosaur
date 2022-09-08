@@ -15,21 +15,21 @@ import (
 )
 
 type Session struct {
-	mu            sync.Mutex
-	language      string
-	code          string
-	uuid          uuid.UUID
-	port          int
-	dockerRunCmd  *exec.Cmd
-	dead          bool
-	buildCmd      string
-	runCmd        string
-	containerName string
-	sourcePath    string
-	heartbeat     time.Time
+	language     string
+	mu           sync.Mutex
+	uuid         uuid.UUID
+	dead         bool
+	code         string
+	dockerRunCmd *exec.Cmd
+	host         string
+	port         int
+	buildCmd     string
+	runCmd       string
+	sourcePath   string
+	heartbeat    time.Time
 }
 
-func NewSession(language string, code string) *Session {
+func NewSession(language string) *Session {
 	sessionUUID, err := uuid.NewRandom()
 	if err != nil {
 		log.Fatal(err) // TODO shouldn't fail unless things are dire
@@ -37,9 +37,9 @@ func NewSession(language string, code string) *Session {
 
 	s := Session{
 		language: language,
-		code:     code,
 		uuid:     sessionUUID,
-		port:     8080,
+		host:     fmt.Sprintf("session-%v-%v", language, sessionUUID.String()),
+		port:     sessionPort,
 		dead:     false,
 	}
 
@@ -50,20 +50,20 @@ func (s *Session) Language() string {
 	return s.language
 }
 
-func (s *Session) Code() string {
-	return s.code
-}
-
 func (s *Session) UUID() uuid.UUID {
 	return s.uuid
 }
 
 func (s *Session) Host() string {
-	return s.containerName
+	return s.host
 }
 
 func (s *Session) Port() int {
 	return s.port
+}
+
+func (s *Session) Code() string {
+	return s.code
 }
 
 func (s *Session) InternalURL() string {
@@ -77,55 +77,6 @@ func (s *Session) GetProxyURL(externalURL *url.URL) string {
 		s.Port(),
 		strings.TrimLeft(externalURL.Path, "/"),
 	)
-}
-
-func (s *Session) PushToSession(data string) error {
-	f, err := os.CreateTemp("", s.containerName)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		_ = f.Close()
-		_ = os.Remove(f.Name())
-	}()
-
-	_, err = f.WriteString(data)
-	if err != nil {
-		return err
-	}
-
-	err = f.Close()
-	if err != nil {
-		return err
-	}
-
-	destPath := path.Join("/srv", s.sourcePath)
-
-	dockerCpCmd := exec.Command(
-		"bash",
-		"-c",
-		fmt.Sprintf(
-			"docker cp %v %v:%v",
-			f.Name(),
-			s.containerName,
-			destPath,
-		),
-	)
-
-	err = dockerCpCmd.Run()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *Session) Heartbeat() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.heartbeat = time.Now()
 }
 
 func (s *Session) Dead() bool {
@@ -148,13 +99,15 @@ func (s *Session) Open() error {
 
 	s.buildCmd = supportedLanguage.BuildCmd
 	s.runCmd = supportedLanguage.RunCmd
-	s.containerName = fmt.Sprintf("session-%v", s.uuid.String())
 	s.sourcePath = path.Join(supportedLanguage.FolderPath, supportedLanguage.FileName)
+	s.code = supportedLanguage.Code
 
 	cmd := fmt.Sprintf(
-		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --network dinosaur-internal -e GOTTY_PATH="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
-		s.containerName,
+		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --hostname %v --network dinosaur-internal -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
+		s.host,
+		s.host,
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
+		s.uuid.String(),
 		s.buildCmd,
 		s.runCmd,
 	)
@@ -186,7 +139,64 @@ func (s *Session) Open() error {
 	return nil
 }
 
+func (s *Session) PushToSession(data string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	f, err := os.CreateTemp("", s.host)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = f.Close()
+		_ = os.Remove(f.Name())
+	}()
+
+	_, err = f.WriteString(data)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	destPath := path.Join("/srv", s.sourcePath)
+
+	dockerCpCmd := exec.Command(
+		"bash",
+		"-c",
+		fmt.Sprintf(
+			"docker cp %v %v:%v",
+			f.Name(),
+			s.host,
+			destPath,
+		),
+	)
+
+	err = dockerCpCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	s.code = data
+
+	return nil
+}
+
+func (s *Session) Heartbeat() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.heartbeat = time.Now()
+}
+
 func (s *Session) Close() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	defer func() {
 		s.dead = true
 	}()
@@ -195,9 +205,9 @@ func (s *Session) Close() {
 		_ = s.dockerRunCmd.Process.Kill()
 	}
 
-	dockerStopCmd := exec.Command("bash", "-c", fmt.Sprintf("docker kill %v", s.containerName))
+	dockerStopCmd := exec.Command("bash", "-c", fmt.Sprintf("docker kill %v", s.host))
 	_ = dockerStopCmd.Run()
 
-	dockerRmCmd := exec.Command("bash", "-c", fmt.Sprintf("docker rm -f %v", s.containerName))
+	dockerRmCmd := exec.Command("bash", "-c", fmt.Sprintf("docker rm -f %v", s.host))
 	_ = dockerRmCmd.Run()
 }

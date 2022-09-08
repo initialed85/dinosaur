@@ -85,12 +85,7 @@ func (m *Manager) CreateSession(language string) (*Session, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	supportedLanguage, ok := supportedLanguageByName[language]
-	if !ok {
-		return nil, fmt.Errorf("unsupported language: %v", language)
-	}
-
-	s := NewSession(language, supportedLanguage.Code)
+	s := NewSession(language)
 
 	err := s.Open()
 	if err != nil {

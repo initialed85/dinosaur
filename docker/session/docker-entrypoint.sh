@@ -7,9 +7,17 @@ function shutdown() {
 }
 trap shutdown SIGTERM
 
+_="${SESSION_UUID:?SESSION_UUID env var missing}"
 _="${BASE_FOLDER_PATH:?BASE_FOLDER_PATH env var missing}"
 _="${BUILD_CMD:?BUILD_CMD env var missing}"
 _="${RUN_CMD:?RUN_CMD env var missing}"
+
+LOCAL_IP=$(ip addr show eth0 | grep inet | head -n 1 | xargs | cut -d ' ' -f 2 | cut -d '/' -f 1)
+BROADCAST_IP=$(ip addr show eth0 | grep inet | head -n 1 | xargs | cut -d ' ' -f 4)
+
+export SESSION_UUID
+export LOCAL_IP
+export BROADCAST_IP
 
 while true; do
 

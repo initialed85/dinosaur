@@ -8,6 +8,10 @@ import (
 	"path"
 )
 
+const (
+	sessionPort = 8080
+)
+
 type SupportedLanguage struct {
 	Name         string `json:"name,omitempty"`
 	FriendlyName string `json:"friendly_name,omitempty"`
