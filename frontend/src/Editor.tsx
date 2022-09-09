@@ -26,6 +26,10 @@ export function Editor(props: EditorProps) {
         //     }
         // });
 
+        m.languages.typescript.typescriptDefaults.setCompilerOptions({
+            moduleResolution: m.languages.typescript.ModuleResolutionKind.NodeJs
+        });
+
         props.setEditorValue(e.getValue());
 
         e.onDidChangeModelContent((event: editor.IModelContentChangedEvent) => {
@@ -55,7 +59,8 @@ export function Editor(props: EditorProps) {
                 fontFamily: 'monospace',
                 formatOnPaste: true,
                 formatOnType: true,
-                scrollBeyondLastLine: false
+                scrollBeyondLastLine: false,
+                'semanticHighlighting.enabled': false
             }}
             onMount={handleEditorDidMount}
         />

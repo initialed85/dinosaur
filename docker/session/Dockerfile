@@ -11,8 +11,6 @@ RUN npm install -g typescript ts-node
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 
-RUN luarocks install luasocket
-
 ENV PATH=${PATH}:/usr/lib/go-1.18/bin:/root/go/bin/:/root/.cargo/bin
 
 RUN go install github.com/sorenisanerd/gotty@latest
@@ -20,6 +18,12 @@ RUN go install github.com/sorenisanerd/gotty@latest
 RUN mkdir -p /srv/cmd/
 
 WORKDIR /srv/
+
+# because Lua has no support for sockets
+RUN luarocks install luasocket
+
+# because TypeScript needs to know about some NodeJS concepts
+RUN npm i --save-dev @types/node
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY loop.sh /loop.sh
