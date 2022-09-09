@@ -83,7 +83,7 @@ func (s *Session) Dead() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return s.dead || time.Now().Sub(s.heartbeat) > time.Second*5
+	return s.dead || time.Now().Sub(s.heartbeat) > sessionTimeout
 }
 
 func (s *Session) Open() error {
@@ -103,7 +103,7 @@ func (s *Session) Open() error {
 	s.code = supportedLanguage.Code
 
 	cmd := fmt.Sprintf(
-		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --hostname %v --network dinosaur-internal -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
+		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
 		s.host,
 		s.host,
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),

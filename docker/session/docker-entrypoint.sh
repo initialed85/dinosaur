@@ -30,6 +30,7 @@ while true; do
     --port "${GOTTY_PORT:?PORT env var missing}" \
     --path "${GOTTY_PATH:?PATH env var missing}" \
     --ws-origin '.*' \
+    --reconnect \
     /loop.sh
 
 done

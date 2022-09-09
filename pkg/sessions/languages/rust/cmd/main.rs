@@ -8,7 +8,7 @@ fn receive_callback(src: net::SocketAddr, data: &str, local_ip: String) {
         return;
     }
 
-    println!("{}:{}\t{:?}", src.ip().to_string(), src.port(), data);
+    println!("{}:{}\t{}", src.ip().to_string(), src.port(), data);
 }
 
 fn receive_loop(socket: sync::Arc<net::UdpSocket>, local_ip: String) {

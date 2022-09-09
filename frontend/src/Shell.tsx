@@ -18,7 +18,7 @@ export function Shell(props: ShellProps) {
                     } catch (e) {
                         // noop
                     }
-                }, 1_000) as any
+                }, 5_000) as any
             );
         }
     }, [heartbeat, props.session]);

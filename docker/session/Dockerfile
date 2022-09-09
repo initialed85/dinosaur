@@ -3,13 +3,15 @@ FROM ubuntu:22.04
 RUN apt-get update && \
     apt-get install -y \
     curl git npm entr \
-    golang-1.18 python3 default-jdk lua5.4 \
+    golang-1.18 python3 default-jdk lua5.4 luarocks \
     procps file strace \
     net-tools inetutils-ping traceroute netcat tcpdump iproute2
 
 RUN npm install -g typescript ts-node
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+RUN luarocks install luasocket
 
 ENV PATH=${PATH}:/usr/lib/go-1.18/bin:/root/go/bin/:/root/.cargo/bin
 

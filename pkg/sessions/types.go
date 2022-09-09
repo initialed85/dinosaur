@@ -6,10 +6,12 @@ import (
 	"log"
 	"os"
 	"path"
+	"time"
 )
 
 const (
-	sessionPort = 8080
+	sessionPort    = 8080
+	sessionTimeout = time.Second * 300
 )
 
 type SupportedLanguage struct {
