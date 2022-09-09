@@ -2,10 +2,6 @@ local socket = require("socket")
 
 PORT = 13337
 
-function sleep(seconds)
-    socket.select(nil, nil, seconds)
-end
-
 hostname = os.getenv("HOSTNAME")
 local_ip = os.getenv("LOCAL_IP")
 broadcast_ip = os.getenv("BROADCAST_IP")
@@ -37,12 +33,19 @@ receive_loop = coroutine.create(function()
 end)
 
 send_loop = coroutine.create(function()
+    last_send = os.time() - 1
     while true do
-        assert(sock:sendto(
-                string.format("Hello world from Lua @ %s", hostname),
-                broadcast_ip,
-                PORT
-        ))
+        if os.time() - last_send >= 1 then
+            assert(sock:sendto(
+                    string.format("Hello world from Lua @ %s", hostname),
+                    broadcast_ip,
+                    PORT
+            ))
+            last_send = os.time()
+        else
+            socket.select(nil, nil, 0.1)
+        end
+
         coroutine.yield()
     end
 end)
@@ -50,5 +53,4 @@ end)
 while true do
     coroutine.resume(receive_loop)
     coroutine.resume(send_loop)
-    sleep(1)
 end
