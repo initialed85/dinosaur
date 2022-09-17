@@ -11,7 +11,7 @@ import (
 
 const (
 	sessionPort    = 8080
-	sessionTimeout = time.Second * 300
+	sessionTimeout = time.Minute * 5
 )
 
 type SupportedLanguage struct {

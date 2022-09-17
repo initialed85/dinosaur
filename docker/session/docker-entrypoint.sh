@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -x
+set -e
 
 function shutdown() {
   touch /tmp/.shutdown
@@ -19,6 +19,8 @@ export SESSION_UUID
 export LOCAL_IP
 export BROADCAST_IP
 
+screen -a -A -S session -d -m bash -c '/loop.sh'
+
 while true; do
 
   if test -e "/tmp/.shutdown"; then
@@ -30,7 +32,6 @@ while true; do
     --port "${GOTTY_PORT:?PORT env var missing}" \
     --path "${GOTTY_PATH:?PATH env var missing}" \
     --ws-origin '.*' \
-    --reconnect \
-    /loop.sh
+    screen -a -A -x session
 
 done

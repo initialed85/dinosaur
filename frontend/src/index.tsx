@@ -10,6 +10,6 @@ const params = getParams();
 
 root.render(
     <React.StrictMode>
-        <App language={params.language} />
+        <App language={params.language} sessionUUID={params.sessionUUID} />
     </React.StrictMode>
 );

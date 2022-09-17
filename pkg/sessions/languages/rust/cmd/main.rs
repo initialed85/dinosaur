@@ -37,12 +37,15 @@ fn main() -> Result<(), io::Error> {
 
     let socket = sync::Arc::new(net::UdpSocket::bind(local_addr).expect("failed to bind socket"));
 
-    socket.set_read_timeout(Option::from(ONE_SECOND)).expect("failed to set read timeout on socket");
+    socket.set_read_timeout(
+        Option::from(ONE_SECOND)
+    ).expect("failed to set read timeout on socket");
+
     socket.set_broadcast(true).expect("failed to set broadcast on socket");
 
-    let arc_socket = sync::Arc::clone(&socket);
+    let cloned_socket = socket.clone();
 
-    thread::spawn(move || receive_loop(arc_socket, local_ip));
+    thread::spawn(move || receive_loop(cloned_socket, local_ip));
 
     loop {
         socket.send_to(

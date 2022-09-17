@@ -22,7 +22,7 @@ interface CreateSessionResponse {
 }
 
 export interface Session {
-    uuid: string;
+    uuid: string | null;
     port: number;
     internalUrl: string;
     code: string;
@@ -69,6 +69,34 @@ export const createSession = async (language: string): Promise<Session> => {
     const response = (await r.json()) as CreateSessionResponse;
 
     createSessionInFlight = false;
+
+    return {
+        uuid: response.uuid,
+        port: response.port,
+        internalUrl: response.internal_url,
+        code: response.code
+    } as Session;
+};
+
+let getSessionInFlight = false;
+
+export const getSession = async (sessionUUID: string): Promise<Session> => {
+    if (getSessionInFlight) {
+        throw new Error('getSession already in-flight');
+    }
+
+    getSessionInFlight = true;
+
+    const r = await fetch(getSessionAPIURL(`get_session/${sessionUUID}/`));
+
+    if (r.status !== 200) {
+        const errorResponse = (await r.json()) as ErrorResponse;
+        throw new Error(errorResponse.error);
+    }
+
+    const response = (await r.json()) as CreateSessionResponse;
+
+    getSessionInFlight = false;
 
     return {
         uuid: response.uuid,

@@ -116,6 +116,35 @@ func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 	_, _ = w.Write(responseJSON)
 }
 
+func handleGetSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
+	status := http.StatusInternalServerError
+	responseJSON := unknownInternalServerErrorResponseJSON
+	var err error
+
+	response := CreateSessionResponse{
+		UUID:        s.UUID(),
+		Port:        s.Port(),
+		InternalURL: s.InternalURL(),
+		Code:        strings.TrimRight(strings.TrimLeft(s.Code(), "\r\n\t "), "\r\n\t ") + "\n",
+	}
+
+	responseJSON, err = json.Marshal(response)
+	if err == nil {
+		status = http.StatusOK
+	}
+
+	log.Printf(
+		">>> %v %v %v %v",
+		r.Method,
+		r.URL.Path,
+		status,
+		string(responseJSON),
+	)
+
+	w.WriteHeader(status)
+	_, _ = w.Write(responseJSON)
+}
+
 func handlePushToSessionRequest(w http.ResponseWriter, r *http.Request) (*PushToSessionRequest, error) {
 	requestJSON, err := ioutil.ReadAll(r.Body)
 	if err != nil {

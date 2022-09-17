@@ -41,7 +41,7 @@ export function Editor(props: EditorProps) {
             timeout = setTimeout(() => {
                 timeout = null;
                 props.setEditorValue(e.getValue());
-            }, 1_000);
+            }, 5_000);
         });
     };
 

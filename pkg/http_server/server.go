@@ -68,6 +68,27 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request, language 
 	handleCreateSessionResponse(w, r, session)
 }
 
+func (s *Server) getSession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
+	if r.Method != http.MethodGet {
+		handleBadRequest(w, r, fmt.Errorf("unsupported method: %#+v", r.Method))
+		return
+	}
+
+	sessionUUID, err := uuid.Parse(rawSessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, err)
+		return
+	}
+
+	session, err := s.sessionManager.GetSession(sessionUUID)
+	if err != nil {
+		handleBadRequest(w, r, err) // TODO may not always be a bad request; need typed errors
+		return
+	}
+
+	handleGetSessionResponse(w, r, session)
+}
+
 func (s *Server) pushToSession(w http.ResponseWriter, r *http.Request, rawSessionUUID string) {
 	if r.Method != http.MethodPost {
 		handleBadRequest(w, r, fmt.Errorf("unsupported method: %#+v", r.Method))
@@ -204,6 +225,11 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 	if len(parts) == 2 {
 		if parts[0] == "create_session" {
 			s.createSession(w, r, parts[1])
+			return
+		}
+
+		if parts[0] == "get_session" {
+			s.getSession(w, r, parts[1])
 			return
 		}
 

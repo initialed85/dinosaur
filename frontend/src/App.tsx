@@ -4,14 +4,17 @@ import { Editor } from './Editor';
 import { Shell } from './Shell';
 import {
     createSession,
+    getSession,
     getSupportedLanguages,
     pushToSession,
     Session,
     SupportedLanguage
 } from './session';
+import { Params, setParams } from './params';
 
 export interface AppProps {
     language: string | null;
+    sessionUUID: string | null;
 }
 
 export function App(props: AppProps) {
@@ -38,7 +41,24 @@ export function App(props: AppProps) {
             return;
         }
 
+        setParams({
+            language: language
+        } as Params);
+
         if (!session) {
+            if (props?.sessionUUID) {
+                getSession(props.sessionUUID)
+                    .then((x: Session) => {
+                        setSession(x as any);
+                    })
+                    .catch(e => {
+                        if (!error) {
+                            setError(e.toString());
+                        }
+                    });
+                return;
+            }
+
             createSession(language)
                 .then((x: Session) => {
                     setSession(x as any);
@@ -51,6 +71,11 @@ export function App(props: AppProps) {
             return;
         }
 
+        setParams({
+            language: language,
+            sessionUUID: (session as Session).uuid
+        } as Params);
+
         if (!editorValue) {
             return;
         }
@@ -62,7 +87,7 @@ export function App(props: AppProps) {
             .catch(e => {
                 // noop
             });
-    }, [supportedLanguages, language, editorValue, session, error, props.language]);
+    }, [supportedLanguages, language, editorValue, session, error, props]);
 
     if (supportedLanguages) {
         (supportedLanguages as SupportedLanguage[]).forEach((x, i) => {

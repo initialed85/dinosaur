@@ -90,6 +90,7 @@ func (s *Session) Open() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	var out []byte
 	var err error
 
 	supportedLanguage, ok := supportedLanguageByName[s.language]
@@ -102,8 +103,8 @@ func (s *Session) Open() error {
 	s.sourcePath = path.Join(supportedLanguage.FolderPath, supportedLanguage.FileName)
 	s.code = supportedLanguage.Code
 
-	cmd := fmt.Sprintf(
-		`docker run --rm --cpus 0.5 --memory 0.5g --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
+	dockerRunCmd := fmt.Sprintf(
+		`docker run --rm -t --cpus 0.5 --memory 0.5g --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
 		s.host,
 		s.host,
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
@@ -115,19 +116,20 @@ func (s *Session) Open() error {
 	s.dockerRunCmd = exec.Command(
 		"bash",
 		"-c",
-		cmd,
+		dockerRunCmd,
 	)
 
-	log.Printf("executing cmd=%v", s.dockerRunCmd)
-
 	go func() {
-		err = s.dockerRunCmd.Run()
+		log.Printf("starting dockerRunCmd=%v", s.dockerRunCmd)
+		out, err = s.dockerRunCmd.CombinedOutput()
+		err = fmt.Errorf(string(out))
+		log.Printf("stopped dockerRunCmd=%v", s.dockerRunCmd)
 		s.dead = true
 	}()
 
 	runtime.Gosched()
 
-	time.Sleep(time.Millisecond * 1000) // TODO: wait for ready w/ smart check vs suspicious sleep
+	time.Sleep(time.Second * 1) // TODO: wait for ready w/ smart check vs suspicious sleep
 
 	if err != nil {
 		s.Close()
