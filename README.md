@@ -43,7 +43,6 @@ adversary.
 
 ## TODO
 
-- Fill out the "socket sender w/ receive loop thread" templates for all languages
 - Ability to group sessions together / isolate them from other groups
 - Record all the packets and interactions for a group with timestamps
 
