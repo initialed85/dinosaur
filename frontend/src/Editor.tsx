@@ -3,6 +3,7 @@ import './Editor.css';
 
 import MonacoEditor, { Monaco } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
+import { PUSH_TO_SESSION_DEBOUNCE } from './config';
 
 export interface EditorProps {
     language: string;
@@ -39,9 +40,9 @@ export function Editor(props: EditorProps) {
             }
 
             timeout = setTimeout(() => {
-                timeout = null;
                 props.setEditorValue(e.getValue());
-            }, 5_000);
+                timeout = null;
+            }, PUSH_TO_SESSION_DEBOUNCE);
         });
     };
 

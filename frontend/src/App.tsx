@@ -24,7 +24,7 @@ export function App(props: AppProps) {
     const [editorValue, setEditorValue] = useState('');
     const [error, setError] = useState(null);
 
-    const buttons: any[] = [];
+    const languageSelections: any[] = [];
 
     useEffect(() => {
         if (!supportedLanguages) {
@@ -91,7 +91,7 @@ export function App(props: AppProps) {
 
     if (supportedLanguages) {
         (supportedLanguages as SupportedLanguage[]).forEach((x, i) => {
-            buttons.push(
+            languageSelections.push(
                 <button
                     key={`button-language-selection-${i}`}
                     className="button-language-selection"
@@ -109,7 +109,7 @@ export function App(props: AppProps) {
         <div className="outer-container">
             <div></div>
             {!language ? (
-                <div className="inner-container-language-selection">{buttons}</div>
+                <div className="inner-container-language-selection">{languageSelections}</div>
             ) : (
                 <div className="inner-container">
                     <div className="editor-item">
