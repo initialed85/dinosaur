@@ -129,7 +129,7 @@ func (s *Session) Open() error {
 
 	runtime.Gosched()
 
-	time.Sleep(time.Second * 1) // TODO: wait for ready w/ smart check vs suspicious sleep
+	time.Sleep(time.Second * 2) // TODO: need something smarter than a magic sleep
 
 	if err != nil {
 		s.Close()
