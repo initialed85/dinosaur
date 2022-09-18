@@ -56,8 +56,18 @@ adversary.
 
 ### Steps
 
+**Build and run in the foreground**
+
 ```shell
-./run.sh
+make  # will block and teardown on Ctrl + C
+```
+
+**Build and run in the background**
+
+```shell
+make up
+make logs  # optional
+make down  # teardown
 ```
 
 ## How to use it
@@ -66,3 +76,6 @@ Once you've got the services up and running, navigate to [http://localhost/](htt
 play with.
 
 You can also navigate directly to a particular language, e.g. [http://localhost/?language=rust](http://localhost/?language=rust).
+
+You can also share a session by navigating to it's URL in another browser window;
+e.g [http://localhost/?language=rust&session_uuid=(some_uuid)](http://localhost/?language=rust&session_uuid=(some_uuid))
