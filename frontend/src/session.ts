@@ -1,4 +1,4 @@
-import { SESSION_API_URL } from './config';
+import {SESSION_API_URL} from './config';
 
 interface ErrorResponse {
     error: string;
@@ -29,7 +29,7 @@ export interface Session {
 }
 
 export const getSessionAPIURL = (path: string): string => {
-    return `${SESSION_API_URL}/${path}`;
+    return `${SESSION_API_URL}/dinosaur/${path}`;
 };
 
 export const getSupportedLanguages = async (): Promise<SupportedLanguage[]> => {

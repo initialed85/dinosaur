@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './Shell.css';
-import { getSessionAPIURL, heartbeatForSession, Session } from './session';
-import { HEARTBEAT_FOR_SESSION_INTERVAL } from './config';
+import {getSessionAPIURL, heartbeatForSession, Session} from './session';
+import {HEARTBEAT_FOR_SESSION_INTERVAL} from './config';
 
 export interface IFrameProps {
     src: string;

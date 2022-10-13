@@ -1,16 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
-import { Editor } from './Editor';
-import { Shell } from './Shell';
-import {
-    createSession,
-    getSession,
-    getSupportedLanguages,
-    pushToSession,
-    Session,
-    SupportedLanguage
-} from './session';
-import { Params, setParams } from './params';
+import {Editor} from './Editor';
+import {Shell} from './Shell';
+import {createSession, getSession, getSupportedLanguages, pushToSession, Session, SupportedLanguage} from './session';
+import {Params, setParams} from './params';
 
 export interface AppProps {
     language: string | null;
@@ -123,19 +116,19 @@ export function App(props: AppProps) {
                             />
                         ) : (
                             <div className="shell-iframe">
-                                Attempting to interact with backend... <br />
-                                <br />
+                                Attempting to interact with backend... <br/>
+                                <br/>
                                 {error}
                             </div>
                         )}
                     </div>
                     <div className="shell-item">
                         {session ? (
-                            <Shell session={session} />
+                            <Shell session={session}/>
                         ) : (
                             <div className="shell-iframe">
-                                Attempting to interact with backend... <br />
-                                <br />
+                                Attempting to interact with backend... <br/>
+                                <br/>
                                 {error}
                             </div>
                         )}

@@ -67,12 +67,12 @@ func (s *Session) Code() string {
 }
 
 func (s *Session) InternalURL() string {
-	return fmt.Sprintf("http://%v:%v/proxy_session/%v/", s.Host(), s.Port(), s.UUID().String())
+	return fmt.Sprintf("http://%v:%v/dinosaur/proxy_session/%v/", s.Host(), s.Port(), s.UUID().String())
 }
 
 func (s *Session) GetProxyURL(externalURL *url.URL) string {
 	return fmt.Sprintf(
-		"http://%v:%v/%v",
+		"http://%v:%v/dinosaur/%v",
 		s.Host(),
 		s.Port(),
 		strings.TrimLeft(externalURL.Path, "/"),
@@ -107,7 +107,7 @@ func (s *Session) Open() error {
 		`docker run --rm -t --cpus 0.2 --memory 128m --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
 		s.host,
 		s.host,
-		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),
+		fmt.Sprintf("/dinosaur/proxy_session/%v/", s.uuid.String()),
 		s.uuid.String(),
 		s.buildCmd,
 		s.runCmd,
