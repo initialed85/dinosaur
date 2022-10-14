@@ -29,7 +29,7 @@ export interface Session {
 }
 
 export const getSessionAPIURL = (path: string): string => {
-    return `${SESSION_API_URL}/dinosaur/${path}`;
+    return `${SESSION_API_URL}/${path}`;
 };
 
 export const getSupportedLanguages = async (): Promise<SupportedLanguage[]> => {
