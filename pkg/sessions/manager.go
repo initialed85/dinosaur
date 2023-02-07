@@ -3,8 +3,6 @@ package sessions
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"log"
-	"os/exec"
 	"sort"
 	"sync"
 	"time"
@@ -26,17 +24,19 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) Open() error {
-	dockerBuildCmd := exec.Command(
-		"bash",
-		"-c",
-		"docker build -t dinosaur-session -f ./docker/session/Dockerfile ./docker/session/",
-	)
-
-	output, err := dockerBuildCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("STDOUT / STDERR: %v", string(output))
-		return err
-	}
+	// TODO: I've disabled the build within the lifecycle of the Manager for now- we build it during deployment which is
+	//   probably good enough; sure if you do a "docker image prune" then you'll be goosed, but meh
+	//dockerBuildCmd := exec.Command(
+	//	"bash",
+	//	"-c",
+	//	"docker build -t dinosaur-session -f ./docker/session/Dockerfile ./docker/session/",
+	//)
+	//
+	//output, err := dockerBuildCmd.CombinedOutput()
+	//if err != nil {
+	//	log.Printf("STDOUT / STDERR: %v", string(output))
+	//	return err
+	//}
 
 	m.ticker = time.NewTicker(time.Second)
 

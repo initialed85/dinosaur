@@ -1,9 +1,11 @@
 package sessions
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -86,6 +88,56 @@ func (s *Session) Dead() bool {
 	return s.dead || time.Now().Sub(s.heartbeat) > sessionTimeout
 }
 
+func (s *Session) Ready() bool {
+	if s.dead {
+		return false
+	}
+
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+		Timeout: time.Second * 5,
+	}
+
+	r, err := httpClient.Get(s.InternalURL())
+	if err != nil {
+		log.Printf("GET %#+v raisd %#+v", s.InternalURL(), err.Error())
+		return false
+	}
+
+	if r.StatusCode != http.StatusOK {
+		log.Printf("GET %#+v returned %#+v", s.InternalURL(), r.StatusCode)
+		return false
+	}
+
+	return true
+}
+
+func (s *Session) waitForReady(timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+
+	for time.Now().Before(deadline) {
+		if s.Ready() {
+			return nil
+		}
+
+		// calling .Ready() should be I/O blocked but an extra debounce to be safe
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	return fmt.Errorf("session %v not ready after %v", s.UUID(), timeout)
+}
+
+func (s *Session) WaitForReady(timeout time.Duration) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.waitForReady(timeout)
+}
+
 func (s *Session) Open() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -121,15 +173,18 @@ func (s *Session) Open() error {
 
 	go func() {
 		log.Printf("starting dockerRunCmd=%v", s.dockerRunCmd)
-		out, err = s.dockerRunCmd.CombinedOutput()
-		err = fmt.Errorf(string(out))
-		log.Printf("stopped dockerRunCmd=%v", s.dockerRunCmd)
+		out, err = s.dockerRunCmd.CombinedOutput() // we'll block here until exit
+		if err != nil {
+			log.Printf("stopped dockerRunCmd=%v, out=%#+v, err=%#+v", s.dockerRunCmd, string(out), err)
+		} else {
+			log.Printf("stopped dockerRunCmd=%v, out=%#+v", s.dockerRunCmd, string(out))
+		}
 		s.dead = true
 	}()
 
 	runtime.Gosched()
 
-	time.Sleep(time.Second * 2) // TODO: need something smarter than a magic sleep
+	err = s.waitForReady(time.Second * 5)
 
 	if err != nil {
 		s.Close()
@@ -142,9 +197,6 @@ func (s *Session) Open() error {
 }
 
 func (s *Session) PushToSession(data string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	f, err := os.CreateTemp("", s.host)
 	if err != nil {
 		return err
@@ -177,6 +229,14 @@ func (s *Session) PushToSession(data string) error {
 			destPath,
 		),
 	)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	err = s.waitForReady(time.Second * 5)
+	if err != nil {
+		return err
+	}
 
 	err = dockerCpCmd.Run()
 	if err != nil {

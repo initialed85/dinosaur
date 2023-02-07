@@ -2,3 +2,10 @@
 **/.iml
 **/.DS_Store
 .idea
+pkg/sessions/languages/java/cmd/*.class
+pkg/sessions/languages/python/*.pyc
+pkg/sessions/languages/rust/cmd/main
+pkg/sessions/languages/typescript/cmd/main.js
+pkg/sessions/languages/typescript/node_modules
+pkg/sessions/languages/typescript/package.json
+pkg/sessions/languages/typescript/package-lock.json

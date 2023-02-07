@@ -171,6 +171,12 @@ func (s *Server) proxySession(w http.ResponseWriter, r *http.Request, rawSession
 		return
 	}
 
+	err = session.WaitForReady(time.Second * 30)
+	if err != nil {
+		handleInternalServerError(w, r, err)
+		return
+	}
+
 	proxyUrl, err := url.Parse(session.GetProxyURL(r.URL))
 	if err != nil {
 		handleInternalServerError(w, r, err)
