@@ -1,19 +1,45 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS builder
 
 RUN apt-get update && \
     apt-get install -y \
-    curl git npm entr \
-    golang-1.18 python3 default-jdk lua5.4 luarocks \
+    curl git entr \
     procps file strace screen \
     net-tools inetutils-ping traceroute netcat tcpdump iproute2
 
+# java
+RUN apt-get update && \
+    apt-get install -y default-jdk
+
+# lua
+RUN apt-get update && \
+    apt-get install -y lua5.4 luarocks
+
+# python3
+RUN apt-get update && \
+    apt-get install -y python3 python3-dev python3-pip
+
+# node
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash && \
+    . /root/.bashrc && nvm alias default v20 && nvm install v20 && nvm use v20
+
+# typescript
+RUN apt-get update && \
+    apt-get install -y npm
 RUN npm install -g typescript ts-node
 
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+# rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > install.sh && \
+  chmod +x install.sh && \
+  ./install.sh -y
+ENV PATH=${PATH}:/root/.cargo/bin/
+RUN rustup update
 
-ENV PATH=${PATH}:/usr/lib/go-1.18/bin:/root/go/bin/:/root/.cargo/bin
+# go
+RUN curl -LO https://go.dev/dl/go1.21.3.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.21.3.linux-amd64.tar.gz
+ENV PATH=${PATH}:/usr/local/go/bin
 
-RUN go install github.com/sorenisanerd/gotty@latest
+RUN CGO_ENABLED=0 go install github.com/sorenisanerd/gotty@latest
 
 RUN mkdir -p /srv/cmd/
 
@@ -26,6 +52,16 @@ RUN luarocks install luasocket
 RUN npm i --save-dev @types/node
 
 RUN echo 'termcapinfo xterm* ti@:te@' >> /root/.screenrc
+
+# this just turns it all into a single layer with the hope that it'll provide a slight image size optimisation
+FROM --platform=linux/amd64 ubuntu:22.04
+
+COPY --from=builder / /
+
+WORKDIR /srv/
+
+ENV PATH=${PATH}:/root/.cargo/bin/
+ENV PATH=${PATH}:/usr/local/go/bin
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY loop.sh /loop.sh

@@ -2,9 +2,6 @@ package http_server
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/gorilla/handlers"
-	"github.com/initialed85/dinosaur/pkg/sessions"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -13,6 +10,10 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
+	"github.com/initialed85/dinosaur/pkg/sessions"
 )
 
 type Server struct {

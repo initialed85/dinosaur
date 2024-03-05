@@ -3,7 +3,6 @@ package sessions
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"net/url"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Session struct {

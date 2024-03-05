@@ -3,11 +3,12 @@ package http_server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/initialed85/dinosaur/pkg/sessions"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/initialed85/dinosaur/pkg/sessions"
 )
 
 func getErrorResponseJSON(err error) ([]byte, error) {

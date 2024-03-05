@@ -2,10 +2,11 @@ package sessions
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Manager struct {
