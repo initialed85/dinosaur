@@ -21,17 +21,19 @@ export BROADCAST_IP
 
 screen -a -A -S session -d -m bash -c '/loop.sh'
 
-while true; do
+bash
 
-  if test -e "/tmp/.shutdown"; then
-    exit 0
-  fi
+# while true; do
 
-  gotty \
-    --address 0.0.0.0 \
-    --port "${GOTTY_PORT:?PORT env var missing}" \
-    --path "${GOTTY_PATH:?PATH env var missing}" \
-    --ws-origin '.*' \
-    screen -a -A -x session
+#   if test -e "/tmp/.shutdown"; then
+#     exit 0
+#   fi
 
-done
+#   gotty \
+#     --address 0.0.0.0 \
+#     --port "${GOTTY_PORT:?PORT env var missing}" \
+#     --path "${GOTTY_PATH:?PATH env var missing}" \
+#     --ws-origin '.*' \
+#     screen -a -A -x session
+
+# done

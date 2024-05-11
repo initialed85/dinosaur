@@ -62,6 +62,7 @@ WORKDIR /srv/
 
 ENV PATH=${PATH}:/root/.cargo/bin/
 ENV PATH=${PATH}:/usr/local/go/bin
+ENV PATH=${PATH}:/root/go/bin
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY loop.sh /loop.sh
