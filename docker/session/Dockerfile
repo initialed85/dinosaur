@@ -64,6 +64,8 @@ ENV PATH=${PATH}:/root/.cargo/bin/
 ENV PATH=${PATH}:/usr/local/go/bin
 ENV PATH=${PATH}:/root/go/bin
 
+RUN ln -s /root/go/bin/gotty /usr/local/bin/gotty
+
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY loop.sh /loop.sh
 COPY build.sh /build.sh
