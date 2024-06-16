@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -34,7 +33,7 @@ func init() {
 
 	listPath := path.Join(cwd, "pkg/sessions/languages")
 
-	files, err := ioutil.ReadDir(listPath)
+	files, err := os.ReadDir(listPath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -56,7 +55,7 @@ func init() {
 			log.Fatalf("expected %v to be a JSON file but it was a folder", manifestFilePath)
 		}
 
-		manifestFileJSON, err := ioutil.ReadFile(manifestFilePath)
+		manifestFileJSON, err := os.ReadFile(manifestFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -72,7 +71,7 @@ func init() {
 
 		codePath := path.Join(listPath, fileInfo.Name(), supportedLanguage.FolderPath, supportedLanguage.FileName)
 
-		code, err := ioutil.ReadFile(codePath)
+		code, err := os.ReadFile(codePath)
 		if err != nil {
 			log.Fatal(err)
 		}

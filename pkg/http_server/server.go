@@ -26,19 +26,17 @@ func New(
 	port int,
 	sessionManager *sessions.Manager,
 ) *Server {
-	serveMux := http.ServeMux{}
-
-	server := http.Server{
-		Addr:    fmt.Sprintf("0.0.0.0:%v", port),
-		Handler: handlers.LoggingHandler(os.Stdout, &serveMux),
-	}
-
 	s := Server{
-		server:         &server,
+		serveMux:       &http.ServeMux{},
 		sessionManager: sessionManager,
 	}
 
-	serveMux.HandleFunc("/", s.route)
+	s.server = &http.Server{
+		Addr:    fmt.Sprintf("0.0.0.0:%v", port),
+		Handler: handlers.LoggingHandler(os.Stdout, s.serveMux),
+	}
+
+	s.serveMux.HandleFunc("/", s.route)
 
 	return &s
 }

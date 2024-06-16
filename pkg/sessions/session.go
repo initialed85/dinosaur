@@ -86,7 +86,7 @@ func (s *Session) Dead() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return s.dead || time.Now().Sub(s.heartbeat) > sessionTimeout
+	return s.dead || time.Since(s.heartbeat) > sessionTimeout
 }
 
 func (s *Session) Ready() bool {
@@ -157,7 +157,7 @@ func (s *Session) Open() error {
 	s.code = supportedLanguage.Code
 
 	dockerRunCmd := fmt.Sprintf(
-		`docker run --rm -t --cpus 0.2 --memory 128m --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" dinosaur-session`,
+		`docker run --rm -t --cpus 0.2 --memory 128m --name %v --hostname %v --network dinosaur-internal --cap-add SYS_PTRACE -e GOTTY_PATH="%v" -e SESSION_UUID="%v" -e BUILD_CMD="%v" -e RUN_CMD="%v" kube-registry.kube-system.svc.cluster.local:5000/dinosaur-session`,
 		s.host,
 		s.host,
 		fmt.Sprintf("/proxy_session/%v/", s.uuid.String()),

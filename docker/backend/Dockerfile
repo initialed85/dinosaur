@@ -33,5 +33,5 @@ COPY docker/session /srv/docker/session
 
 COPY --from=build /srv/main /srv/main
 
-ENTRYPOINT ["/srv/main"]
+ENTRYPOINT ["bash", "-c", "docker network create dinosaur-external || true; docker network create dinosaur-internal --internal; /srv/main"]
 CMD []

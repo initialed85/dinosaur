@@ -2,6 +2,8 @@ package sessions
 
 import (
 	"fmt"
+	"log"
+	"os/exec"
 	"sort"
 	"sync"
 	"time"
@@ -25,25 +27,35 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) Open() error {
-	// TODO: I've disabled the build within the lifecycle of the Manager for now- we build it during deployment which is
-	//   probably good enough; sure if you do a "docker image prune" then you'll be goosed, but meh
-	//dockerBuildCmd := exec.Command(
-	//	"bash",
-	//	"-c",
-	//	"docker build -t dinosaur-session -f ./docker/session/Dockerfile ./docker/session/",
-	//)
-	//
-	//output, err := dockerBuildCmd.CombinedOutput()
-	//if err != nil {
-	//	log.Printf("STDOUT / STDERR: %v", string(output))
-	//	return err
-	//}
+	// TODO: dependency injection for the registry path
+	go func() {
+		for {
+			log.Printf("pulling session container image...")
+
+			dockerBuildCmd := exec.Command(
+				"bash",
+				"-c",
+				"docker image pull kube-registry.kube-system.svc.cluster.local:5000/dinosaur-session",
+			)
+
+			output, err := dockerBuildCmd.CombinedOutput()
+			if err != nil {
+				log.Printf("STDOUT / STDERR: %v", string(output))
+				time.Sleep(time.Second * 1)
+				log.Printf("retrying...")
+				continue
+			}
+
+			log.Printf("pulled session container image.")
+			break
+		}
+	}()
 
 	m.ticker = time.NewTicker(time.Second)
 
 	go func() {
 		for {
-			_ = <-m.ticker.C
+			<-m.ticker.C
 
 			m.mu.Lock()
 			dead := m.ticker == nil
@@ -150,7 +162,7 @@ func (m *Manager) Close() {
 		m.ticker = nil
 	}
 	toDelete := make([]uuid.UUID, 0)
-	for sessionUUID, _ := range m.sessionByUUID {
+	for sessionUUID := range m.sessionByUUID {
 		toDelete = append(toDelete, sessionUUID)
 	}
 	m.mu.Unlock()

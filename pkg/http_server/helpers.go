@@ -3,7 +3,7 @@ package http_server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -27,13 +27,11 @@ func getErrorResponseJSON(err error) ([]byte, error) {
 }
 
 func handleBadRequest(w http.ResponseWriter, r *http.Request, errToHandle error) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
-	var err error
-
-	responseJSON, err = getErrorResponseJSON(errToHandle)
-	if err == nil {
-		status = http.StatusBadRequest
+	status := http.StatusBadRequest
+	responseJSON, err := getErrorResponseJSON(errToHandle)
+	if err != nil {
+		status = http.StatusInternalServerError
+		responseJSON = unknownInternalServerErrorResponseJSON
 	}
 
 	log.Printf(
@@ -49,10 +47,12 @@ func handleBadRequest(w http.ResponseWriter, r *http.Request, errToHandle error)
 }
 
 func handleInternalServerError(w http.ResponseWriter, r *http.Request, errToHandle error) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
 
-	responseJSON, _ = getErrorResponseJSON(errToHandle)
+	status := http.StatusInternalServerError
+	responseJSON, err := getErrorResponseJSON(errToHandle)
+	if err != nil {
+		responseJSON = unknownInternalServerErrorResponseJSON
+	}
 
 	log.Printf(
 		">>> %v %v %v %v",
@@ -67,13 +67,11 @@ func handleInternalServerError(w http.ResponseWriter, r *http.Request, errToHand
 }
 
 func handleGetSupportedLanguagesResponse(w http.ResponseWriter, r *http.Request, supportedLanguages []sessions.SupportedLanguage) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
-	var err error
-
-	responseJSON, err = json.Marshal(supportedLanguages)
-	if err == nil {
-		status = http.StatusOK
+	status := http.StatusOK
+	responseJSON, err := json.Marshal(supportedLanguages)
+	if err != nil {
+		status = http.StatusInternalServerError
+		responseJSON = unknownInternalServerErrorResponseJSON
 	}
 
 	log.Printf(
@@ -89,10 +87,6 @@ func handleGetSupportedLanguagesResponse(w http.ResponseWriter, r *http.Request,
 }
 
 func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
-	var err error
-
 	response := CreateSessionResponse{
 		UUID:        s.UUID(),
 		Port:        s.Port(),
@@ -100,9 +94,11 @@ func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 		Code:        strings.TrimRight(strings.TrimLeft(s.Code(), "\r\n\t "), "\r\n\t ") + "\n",
 	}
 
-	responseJSON, err = json.Marshal(response)
-	if err == nil {
-		status = http.StatusCreated
+	status := http.StatusCreated
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		status = http.StatusInternalServerError
+		responseJSON = unknownInternalServerErrorResponseJSON
 	}
 
 	log.Printf(
@@ -118,10 +114,6 @@ func handleCreateSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 }
 
 func handleGetSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
-	status := http.StatusInternalServerError
-	responseJSON := unknownInternalServerErrorResponseJSON
-	var err error
-
 	response := CreateSessionResponse{
 		UUID:        s.UUID(),
 		Port:        s.Port(),
@@ -129,9 +121,11 @@ func handleGetSessionResponse(w http.ResponseWriter, r *http.Request, s *session
 		Code:        strings.TrimRight(strings.TrimLeft(s.Code(), "\r\n\t "), "\r\n\t ") + "\n",
 	}
 
-	responseJSON, err = json.Marshal(response)
-	if err == nil {
-		status = http.StatusOK
+	status := http.StatusOK
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		status = http.StatusInternalServerError
+		responseJSON = unknownInternalServerErrorResponseJSON
 	}
 
 	log.Printf(
@@ -147,7 +141,7 @@ func handleGetSessionResponse(w http.ResponseWriter, r *http.Request, s *session
 }
 
 func handlePushToSessionRequest(w http.ResponseWriter, r *http.Request) (*PushToSessionRequest, error) {
-	requestJSON, err := ioutil.ReadAll(r.Body)
+	requestJSON, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -164,9 +158,7 @@ func handlePushToSessionRequest(w http.ResponseWriter, r *http.Request) (*PushTo
 
 func handlePushToSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
 	status := http.StatusAccepted
-	responseJSON := unknownInternalServerErrorResponseJSON
-
-	responseJSON = []byte(`{"success": true"}`)
+	responseJSON := []byte(`{"success": true"}`)
 
 	log.Printf(
 		">>> %v %v %v %v",
@@ -182,9 +174,7 @@ func handlePushToSessionResponse(w http.ResponseWriter, r *http.Request, s *sess
 
 func handleHeartbeatForSessionResponse(w http.ResponseWriter, r *http.Request, s *sessions.Session) {
 	status := http.StatusAccepted
-	responseJSON := unknownInternalServerErrorResponseJSON
-
-	responseJSON = []byte(`{"success": true"}`)
+	responseJSON := []byte(`{"success": true"}`)
 
 	log.Printf(
 		">>> %v %v %v %v",
